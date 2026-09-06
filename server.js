@@ -12,50 +12,25 @@ const app = express();
 
 
 /* =====================================================
-   FOLDER LOCATIONS
-   ===================================================== */
-
-/*
-   Folder structure:
-
-   Desktop
-   │
-   ├── Third Eye
-   │   ├── Backend
-   │   │   ├── server.js
-   │   │   └── users.json
-   │   │
-   │   ├── sukoga.html
-   │   ├── style.css
-   │   ├── script.js
-   │   └── other chatbot files
-   │
-   └── Third Eye Website
-       ├── index.html
-       ├── style.css
-       └── script.js
-*/
-
-
-/* =====================================================
-   MAIN WEBSITE LOCATION
-   ===================================================== */
-
-const websiteFolder = path.join(
-    __dirname,
-    "..",
-    "..",
-    "Third Eye Website"
-);
-
-
-/* =====================================================
    CHATBOT LOCATION
    ===================================================== */
 
+/*
+   Render repository structure:
+
+   third-eye-backend
+   │
+   ├── server.js
+   ├── package.json
+   ├── sukoga.html
+   ├── style.css
+   ├── script.js
+   ├── images
+   └── other chatbot files
+*/
+
 const chatbotFolder = path.join(
-    __dirname,
-    ".."
+    __dirname
 );
 
 const chatbotFile = path.join(
@@ -76,32 +51,15 @@ app.use(
 
 
 /* =====================================================
-   MAIN WEBSITE
+   BACKEND ROOT
    ===================================================== */
-
-/*
-   http://localhost:3000/
-
-   opens:
-
-   Desktop
-   └── Third Eye Website
-       └── index.html
-*/
-
-app.use(
-    express.static(websiteFolder)
-);
 
 app.get(
     "/",
     (req, res) => {
 
-        res.sendFile(
-            path.join(
-                websiteFolder,
-                "index.html"
-            )
+        res.send(
+            "Third Eye backend is running successfully! 🚀"
         );
 
     }
@@ -113,13 +71,9 @@ app.get(
    ===================================================== */
 
 /*
-   http://localhost:3000/chatbot
+   https://YOUR-RENDER-URL.onrender.com/chatbot
 
-   opens:
-
-   Desktop
-   └── Third Eye
-       └── sukoga.html
+   opens the Third Eye chatbot.
 */
 
 app.get(
@@ -157,7 +111,7 @@ app.get(
 /*
    Serve chatbot files.
 
-   This allows sukoga.html to load files such as:
+   This allows sukoga.html to load:
 
    style.css
    script.js
@@ -165,11 +119,6 @@ app.get(
    logos
    icons
    etc.
-
-   Example:
-
-   /chatbot/style.css
-   /chatbot/script.js
 */
 
 app.use(
@@ -182,7 +131,8 @@ app.use(
    SERVER SETTINGS
    ===================================================== */
 
-const PORT = 3000;
+const PORT =
+    process.env.PORT || 3000;
 
 
 /* =====================================================
@@ -374,8 +324,19 @@ function checkPassword(
    TOKEN
    ===================================================== */
 
+/*
+   For Render:
+
+   Add TOKEN_SECRET inside
+   Render → Environment Variables.
+
+   A fallback is kept so the local server
+   still works if the variable is not set.
+*/
+
 const TOKEN_SECRET =
-    "third-eye-secret-change-this-later";
+    process.env.TOKEN_SECRET ||
+    "third-eye-local-development-secret";
 
 
 /* =====================================================
@@ -1765,6 +1726,8 @@ app.listen(
 
     PORT,
 
+    "0.0.0.0",
+
     () => {
 
         console.log(
@@ -1776,11 +1739,10 @@ app.listen(
         );
 
         console.log(
-            "Main Website:"
+            "Port:"
         );
 
         console.log(
-            "http://localhost:" +
             PORT
         );
 
@@ -1789,17 +1751,7 @@ app.listen(
         );
 
         console.log(
-            "http://localhost:" +
-            PORT +
             "/chatbot"
-        );
-
-        console.log(
-            "Website folder:"
-        );
-
-        console.log(
-            websiteFolder
         );
 
         console.log(
