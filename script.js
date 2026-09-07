@@ -1,3 +1,4 @@
+```javascript
 // =====================================================
 // THIRD EYE v1.0
 // Created by: Maha Singh
@@ -66,7 +67,24 @@ let thinkingInterval = null;
 // THINKING MESSAGES
 // =====================================================
 
-const thinkingMessages = [
+// NORMAL TEXT MESSAGES
+const textThinkingMessages = [
+
+    "🤔 Thinking...",
+
+    "🧠 Processing your question...",
+
+    "🔍 Finding the best answer...",
+
+    "✨ Preparing your answer...",
+
+    "🤖 Almost there..."
+
+];
+
+
+// IMAGE MESSAGES
+const imageThinkingMessages = [
 
     "👁️ Analyzing image...",
 
@@ -81,6 +99,22 @@ const thinkingMessages = [
     "🤖 Preparing the answer...",
 
     "👁️ Almost there..."
+
+];
+
+
+// FILE MESSAGES
+const fileThinkingMessages = [
+
+    "📄 Reading file...",
+
+    "🔍 Examining the document...",
+
+    "🧠 Understanding the contents...",
+
+    "✨ Preparing the answer...",
+
+    "🤖 Almost there..."
 
 ];
 
@@ -167,7 +201,7 @@ function addMessage(type, text) {
 // SHOW THINKING
 // =====================================================
 
-function showTyping() {
+function showTyping(type = "text") {
 
     const chatBox =
         document.getElementById(
@@ -193,6 +227,31 @@ function showTyping() {
     }
 
 
+    let messages;
+
+
+    if (type === "image") {
+
+        messages =
+            imageThinkingMessages;
+
+    }
+
+    else if (type === "file") {
+
+        messages =
+            fileThinkingMessages;
+
+    }
+
+    else {
+
+        messages =
+            textThinkingMessages;
+
+    }
+
+
     const typing =
         document.createElement("p");
 
@@ -203,7 +262,7 @@ function showTyping() {
 
     typing.innerHTML =
         "<b>🤖 Third Eye:</b> " +
-        thinkingMessages[0];
+        messages[0];
 
 
     chatBox.appendChild(
@@ -227,7 +286,7 @@ function showTyping() {
 
                 if (
                     messageIndex >=
-                    thinkingMessages.length
+                    messages.length
                 ) {
 
                     messageIndex = 0;
@@ -245,7 +304,7 @@ function showTyping() {
 
                     currentTyping.innerHTML =
                         "<b>🤖 Third Eye:</b> " +
-                        thinkingMessages[
+                        messages[
                             messageIndex
                         ];
 
@@ -1373,7 +1432,7 @@ function sendMessage() {
 
 function sendBuiltInReply(reply) {
 
-    showTyping();
+    showTyping("text");
 
 
     setTimeout(
@@ -1414,7 +1473,8 @@ function sendBuiltInReply(reply) {
 
 async function askAI(usermessage) {
 
-    showTyping();
+    // NORMAL TEXT = NORMAL THINKING
+    showTyping("text");
 
 
     try {
@@ -1613,25 +1673,50 @@ async function askAI(usermessage) {
 
 async function askAIWithFile(usermessage) {
 
-    showTyping();
+    if (
+        selectedAttachments.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    const file =
+        selectedAttachments[0];
+
+
+    // =================================================
+    // CHOOSE CORRECT THINKING MESSAGE
+    // =================================================
+
+    const lowerName =
+        file.name.toLowerCase();
+
+
+    const isImage =
+        file.type.startsWith("image/") ||
+        lowerName.endsWith(".jpeg") ||
+        lowerName.endsWith(".jpg") ||
+        lowerName.endsWith(".png");
+
+
+    if (isImage) {
+
+        // IMAGE = IMAGE ANALYSIS ANIMATION
+        showTyping("image");
+
+    }
+
+    else {
+
+        // PDF / TXT / DOCX = FILE READING ANIMATION
+        showTyping("file");
+
+    }
 
 
     try {
-
-        if (
-            selectedAttachments.length === 0
-        ) {
-
-            removeTyping();
-
-            return;
-
-        }
-
-
-        const file =
-            selectedAttachments[0];
-
 
         const allowedTypes = [
 
@@ -1643,10 +1728,6 @@ async function askAIWithFile(usermessage) {
             ".png"
 
         ];
-
-
-        const lowerName =
-            file.name.toLowerCase();
 
 
         const supported =
@@ -1843,7 +1924,7 @@ async function askAIWithFile(usermessage) {
 
 function dictionaryDefinition(word) {
 
-    showTyping();
+    showTyping("text");
 
 
     fetch(
@@ -1935,7 +2016,7 @@ function dictionaryDefinition(word) {
 
 function dictionarySynonyms(word) {
 
-    showTyping();
+    showTyping("text");
 
 
     fetch(
@@ -2062,7 +2143,7 @@ function dictionarySynonyms(word) {
 
 function dictionaryAntonyms(word) {
 
-    showTyping();
+    showTyping("text");
 
 
     fetch(
@@ -2189,7 +2270,7 @@ function dictionaryAntonyms(word) {
 
 function dictionaryExamples(word) {
 
-    showTyping();
+    showTyping("text");
 
 
     fetch(
@@ -2323,7 +2404,7 @@ function dictionaryExamples(word) {
 
 function dictionaryPronunciation(word) {
 
-    showTyping();
+    showTyping("text");
 
 
     const pronunciationMap = {
@@ -2504,7 +2585,7 @@ function wordOfTheDay() {
         ];
 
 
-    showTyping();
+    showTyping("text");
 
 
     fetch(
@@ -3185,7 +3266,6 @@ function cleanWord(word) {
 }
 
 
-
 // =====================================================
 // WELCOME SCREEN
 // SMOOTH CHAT INTERFACE OPENING
@@ -3215,30 +3295,19 @@ function startThirdEye() {
     }
 
 
-    // Prevent the button from
-    // being triggered twice.
-
     welcomeScreen.style.pointerEvents =
         "none";
 
-
-    // Start welcome screen fade-out.
 
     welcomeScreen.classList.add(
         "welcome-hidden"
     );
 
 
-    // Start chatbot fade-in.
-
     chatContainer.classList.add(
         "chat-visible"
     );
 
-
-    // Completely remove the
-    // welcome screen after
-    // the animation finishes.
 
     setTimeout(
         function () {
@@ -3980,10 +4049,6 @@ async function loginUser() {
         }
 
 
-        // =============================================
-        // SAVE LOGIN
-        // =============================================
-
         localStorage.setItem(
             "thirdEyeToken",
             data.token
@@ -3998,10 +4063,6 @@ async function loginUser() {
         );
 
 
-        // =============================================
-        // UPDATE CHAT STORAGE FOR THIS USER
-        // =============================================
-
         chatHistory =
             JSON.parse(
                 localStorage.getItem(
@@ -4009,10 +4070,6 @@ async function loginUser() {
                 )
             ) || [];
 
-
-        // =============================================
-        // SUCCESS
-        // =============================================
 
         message.textContent =
             "Login successful!";
@@ -4356,6 +4413,7 @@ document.addEventListener(
     }
 );
 
+
 // =====================================================
 // HELP
 // =====================================================
@@ -4365,7 +4423,10 @@ function showHelp() {
     const helpPopup =
         document.createElement("div");
 
-    helpPopup.id = "help-popup";
+
+    helpPopup.id =
+        "help-popup";
+
 
     helpPopup.innerHTML = `
         <div class="help-box">
@@ -4394,8 +4455,13 @@ function showHelp() {
         </div>
     `;
 
-    document.body.appendChild(helpPopup);
+
+    document.body.appendChild(
+        helpPopup
+    );
+
 }
+
 
 // =====================================================
 // STARTUP
@@ -4455,6 +4521,7 @@ window.addEventListener(
                 }
             );
 
+
             console.log(
                 "Login button connected successfully."
             );
@@ -4492,3 +4559,4 @@ window.addEventListener(
 
     }
 );
+```
