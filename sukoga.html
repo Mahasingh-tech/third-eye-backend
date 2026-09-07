@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Third Eye</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<!-- =====================================================
+     THIRD EYE AUTHENTICATION
+     ===================================================== -->
+
+<div id="auth-screen">
+
+    <!-- LOGIN -->
+    <div id="login-box" class="auth-box">
+
+        <div class="auth-logo">👁️</div>
+
+        <h1>Welcome Back</h1>
+
+        <p>Login to continue to Third Eye</p>
+
+        <input
+            type="email"
+            id="login-email"
+            placeholder="Email"
+            autocomplete="email"
+        >
+
+        <input
+            type="password"
+            id="login-password"
+            placeholder="Password"
+            autocomplete="current-password"
+        >
+
+       <button
+    type="button"
+    id="login-button"
+    class="auth-main-button">
+    Login
+</button>
+
+        <p id="login-message" class="auth-message"></p>
+
+        <div class="auth-switch">
+
+            Don't have an account?
+
+            <button
+                onclick="showSignup()"
+                class="auth-link">
+                Sign Up
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- SIGN UP -->
+    <div
+        id="signup-box"
+        class="auth-box"
+        style="display: none;">
+
+        <div class="auth-logo">👁️</div>
+
+        <h1>Create Account</h1>
+
+        <p>Join Third Eye</p>
+
+        <input
+            type="text"
+            id="signup-name"
+            placeholder="Your name"
+            autocomplete="name"
+        >
+
+        <input
+            type="email"
+            id="signup-email"
+            placeholder="Email"
+            autocomplete="email"
+        >
+
+        <input
+            type="password"
+            id="signup-password"
+            placeholder="Password"
+            autocomplete="new-password"
+        >
+
+        <button
+            onclick="signupUser()"
+            class="auth-main-button">
+            Create Account
+        </button>
+
+        <p id="signup-message" class="auth-message"></p>
+
+        <div class="auth-switch">
+
+            Already have an account?
+
+            <button
+                onclick="showLogin()"
+                class="auth-link">
+                Login
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="welcome-screen">
+
+    <img
+        src="images/third-front.jpeg"
+        alt="Third Eye"
+        id="welcome-image"
+    >
+
+    <h1>Welcome to Third Eye</h1>
+
+    <p>Learn. Create. Explore. 🚀</p>
+
+    <button onclick="startThirdEye()">Start Chatting</button>
+
+</div>
+
+
+<div class="chat-container">
+
+    <div class="header">
+
+        <div class="logo-title">
+
+            <img
+                src="images/third-eye.jpeg"
+                class="logo"
+                alt="third-eye"
+            >
+
+            <span>Third Eye</span>
+
+        </div>
+
+
+       <div class="header-buttons">
+
+    <button onclick="toggleDarkMode()">
+        🌙
+    </button>
+
+    <button onclick="clearChat()">
+        🗑️
+    </button>
+
+    <button onclick="showHistory()">
+        📜 History
+    </button>
+
+    <button onclick="clearHistory()">
+        🧹
+    </button>
+
+<button
+    id="help-btn"
+    class="header-button"
+    onclick="showHelp()">
+    <img src="images/help1.png" alt="Help">
+</button>
+
+    <div id="profile-wrapper">
+
+        <button
+            id="profile-btn"
+            onclick="toggleProfileMenu()">
+            👤
+        </button>
+
+        <div id="profile-menu">
+
+            <div id="profile-name">
+                User
+            </div>
+
+            <div id="profile-email">
+                email
+            </div>
+
+            <hr>
+
+            <button onclick="logoutThirdEye()">
+                🚪 Logout
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+    </div>
+
+
+    <div id="chat-box"></div>
+
+
+ <div class="input-area">
+
+    <!-- Attachment area -->
+    <div id="attachment-wrapper">
+
+        <button
+            id="attachBtn"
+            onclick="toggleAttachmentMenu()"
+            title="Attach files">
+            +
+        </button>
+
+        <div id="attachment-menu">
+
+            <button onclick="selectImages()">
+                🖼️ Photos
+            </button>
+
+            <button onclick="selectFiles()">
+                📎 Files
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- Hidden file inputs -->
+
+    <input
+        type="file"
+        id="imageInput"
+        accept="image/*"
+        multiple
+        hidden
+        onchange="handleImages(event)">
+
+    <input
+        type="file"
+        id="fileInput"
+        multiple
+        hidden
+        onchange="handleFiles(event)">
+
+
+    <!-- Selected attachments -->
+
+    <div id="attachment-preview"></div>
+
+
+    <!-- Message box -->
+
+    <input
+        type="text"
+        id="message"
+        placeholder="Ask Third Eye anything....."
+        onkeypress="checkEnter(event)">
+
+
+    <!-- Microphone -->
+
+    <button
+        onclick="startListening()"
+        id="micBtn">
+        🎤
+    </button>
+
+
+    <!-- Send -->
+
+    <button onclick="sendMessage()">
+        Send
+    </button>
+
+</div>
+
+</div>
+<!-- HISTORY PANEL -->
+
+<div id="history-overlay">
+
+    <div id="history-panel">
+
+        <div id="history-header">
+
+            <h2>📜 Chat History</h2>
+
+            <button
+                id="close-history"
+                onclick="closeHistory()">
+                ✕
+            </button>
+
+        </div>
+
+        <div id="history-content"></div>
+
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
