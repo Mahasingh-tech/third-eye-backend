@@ -1,4 +1,3 @@
-```javascript
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
@@ -16,10 +15,7 @@ const app = express();
    CHATBOT LOCATION
    ===================================================== */
 
-const chatbotFolder = path.join(
-    __dirname
-);
-
+const chatbotFolder = path.join(__dirname);
 const chatbotFile = path.join(
     chatbotFolder,
     "sukoga.html"
@@ -31,62 +27,51 @@ const chatbotFile = path.join(
    ===================================================== */
 
 app.use(cors());
-
-app.use(
-    express.json()
-);
+app.use(express.json());
 
 
 /* =====================================================
    BACKEND ROOT
    ===================================================== */
 
-app.get(
-    "/",
-    (req, res) => {
-
-        res.send(
-            "Third Eye backend is running successfully! 🚀"
-        );
-
-    }
-);
+app.get("/", function (req, res) {
+    res.send(
+        "Third Eye backend is running successfully! 🚀"
+    );
+});
 
 
 /* =====================================================
    CHATBOT
    ===================================================== */
 
-app.get(
-    "/chatbot",
-    (req, res) => {
+app.get("/chatbot", function (req, res) {
 
-        res.sendFile(
-            chatbotFile,
-            (error) => {
+    res.sendFile(
+        chatbotFile,
+        function (error) {
 
-                if (error) {
+            if (error) {
 
-                    console.error(
-                        "Chatbot file error:",
-                        error
+                console.error(
+                    "Chatbot file error:",
+                    error
+                );
+
+                if (!res.headersSent) {
+
+                    res.status(500).send(
+                        "Could not open Third Eye chatbot."
                     );
-
-                    if (!res.headersSent) {
-
-                        res.status(500).send(
-                            "Could not open Third Eye chatbot."
-                        );
-
-                    }
 
                 }
 
             }
-        );
 
-    }
-);
+        }
+    );
+
+});
 
 
 /* =====================================================
@@ -159,15 +144,12 @@ if (
 ) {
 
     fs.writeFileSync(
-
         USERS_FILE,
-
         JSON.stringify(
             [],
             null,
             2
         )
-
     );
 
 }
@@ -182,12 +164,10 @@ function getUsers() {
     try {
 
         return JSON.parse(
-
             fs.readFileSync(
                 USERS_FILE,
                 "utf8"
             )
-
         );
 
     }
@@ -210,20 +190,15 @@ function getUsers() {
    SAVE USERS
    ===================================================== */
 
-function saveUsers(
-    users
-) {
+function saveUsers(users) {
 
     fs.writeFileSync(
-
         USERS_FILE,
-
         JSON.stringify(
             users,
             null,
             2
         )
-
     );
 
 }
@@ -233,15 +208,12 @@ function saveUsers(
    PASSWORD HASHING
    ===================================================== */
 
-function hashPassword(
-    password
-) {
+function hashPassword(password) {
 
     const salt =
         crypto
             .randomBytes(16)
             .toString("hex");
-
 
     const hash =
         crypto
@@ -252,8 +224,7 @@ function hashPassword(
             )
             .toString("hex");
 
-
-    return `${salt}:${hash}`;
+    return salt + ":" + hash;
 
 }
 
@@ -266,6 +237,15 @@ function checkPassword(
     password,
     storedPassword
 ) {
+
+    if (
+        typeof storedPassword !== "string"
+    ) {
+
+        return false;
+
+    }
+
 
     const parts =
         storedPassword.split(":");
@@ -299,23 +279,37 @@ function checkPassword(
 
     try {
 
-        return crypto.timingSafeEqual(
-
+        const currentBuffer =
             Buffer.from(
                 hash,
                 "hex"
-            ),
+            );
 
+        const originalBuffer =
             Buffer.from(
                 originalHash,
                 "hex"
-            )
+            );
 
+
+        if (
+            currentBuffer.length !==
+            originalBuffer.length
+        ) {
+
+            return false;
+
+        }
+
+
+        return crypto.timingSafeEqual(
+            currentBuffer,
+            originalBuffer
         );
 
     }
 
-    catch {
+    catch (error) {
 
         return false;
 
@@ -337,9 +331,7 @@ const TOKEN_SECRET =
    CREATE TOKEN
    ===================================================== */
 
-function createToken(
-    user
-) {
+function createToken(user) {
 
     const payload = {
 
@@ -379,7 +371,7 @@ function createToken(
             );
 
 
-    return `${data}.${signature}`;
+    return data + "." + signature;
 
 }
 
@@ -390,15 +382,18 @@ function createToken(
 
 app.post(
     "/signup",
-    (req, res) => {
+    function (req, res) {
 
         try {
 
-            const {
-                name,
-                email,
-                password
-            } = req.body;
+            const name =
+                req.body.name;
+
+            const email =
+                req.body.email;
+
+            const password =
+                req.body.password;
 
 
             if (
@@ -443,11 +438,14 @@ app.post(
 
             const existingUser =
                 users.find(
+                    function (user) {
 
-                    user =>
-                        user.email ===
-                        cleanEmail
+                        return (
+                            user.email ===
+                            cleanEmail
+                        );
 
+                    }
                 );
 
 
@@ -509,7 +507,8 @@ app.post(
                 message:
                     "Account created successfully.",
 
-                token,
+                token:
+                    token,
 
                 user: {
 
@@ -528,9 +527,7 @@ app.post(
 
         }
 
-        catch (
-            error
-        ) {
+        catch (error) {
 
             console.error(
                 "Signup error:",
@@ -557,14 +554,15 @@ app.post(
 
 app.post(
     "/login",
-    (req, res) => {
+    function (req, res) {
 
         try {
 
-            const {
-                email,
-                password
-            } = req.body;
+            const email =
+                req.body.email;
+
+            const password =
+                req.body.password;
 
 
             if (
@@ -594,17 +592,18 @@ app.post(
 
             const user =
                 users.find(
+                    function (item) {
 
-                    user =>
-                        user.email ===
-                        cleanEmail
+                        return (
+                            item.email ===
+                            cleanEmail
+                        );
 
+                    }
                 );
 
 
-            if (
-                !user
-            ) {
+            if (!user) {
 
                 return res.status(401).json({
 
@@ -618,11 +617,8 @@ app.post(
 
             const passwordCorrect =
                 checkPassword(
-
                     password,
-
                     user.password
-
                 );
 
 
@@ -651,7 +647,8 @@ app.post(
                 message:
                     "Login successful.",
 
-                token,
+                token:
+                    token,
 
                 user: {
 
@@ -670,9 +667,7 @@ app.post(
 
         }
 
-        catch (
-            error
-        ) {
+        catch (error) {
 
             console.error(
                 "Login error:",
@@ -697,9 +692,7 @@ app.post(
    GEMINI API
    ===================================================== */
 
-async function callGemini(
-    contents
-) {
+async function callGemini(contents) {
 
     if (
         !GEMINI_API_KEY
@@ -712,11 +705,15 @@ async function callGemini(
     }
 
 
+    const geminiURL =
+        "https://generativelanguage.googleapis.com/v1beta/models/" +
+        GEMINI_MODEL +
+        ":generateContent";
+
+
     const response =
         await fetch(
-
-            `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-
+            geminiURL,
             {
 
                 method:
@@ -751,7 +748,6 @@ async function callGemini(
                     })
 
             }
-
         );
 
 
@@ -764,23 +760,17 @@ async function callGemini(
     ) {
 
         console.error(
-
             "Gemini API error:",
-
             response.status,
-
             responseText
-
         );
 
 
         throw new Error(
-
             "Gemini API returned status " +
             response.status +
             ": " +
             responseText
-
         );
 
     }
@@ -798,7 +788,7 @@ async function callGemini(
 
     }
 
-    catch {
+    catch (error) {
 
         throw new Error(
             "Gemini returned invalid JSON."
@@ -808,15 +798,28 @@ async function callGemini(
 
 
     /* =================================================
-       FIXED GEMINI RESPONSE ACCESS
+       READ GEMINI RESPONSE
        ================================================= */
 
-    const parts =
-        data
-            ?.candidates
-            ?.[0]
-            ?.content
-            ?.parts;
+    let parts = null;
+
+
+    if (
+        data &&
+        data.candidates &&
+        Array.isArray(data.candidates) &&
+        data.candidates.length > 0 &&
+        data.candidates[0] &&
+        data.candidates[0].content &&
+        Array.isArray(
+            data.candidates[0].content.parts
+        )
+    ) {
+
+        parts =
+            data.candidates[0].content.parts;
+
+    }
 
 
     if (
@@ -828,6 +831,7 @@ async function callGemini(
             JSON.stringify(data)
         );
 
+
         throw new Error(
             "Gemini returned no answer."
         );
@@ -835,18 +839,23 @@ async function callGemini(
     }
 
 
-    const text =
-        parts
-            .filter(
-                part =>
-                    typeof part.text ===
-                    "string"
-            )
-            .map(
-                part =>
-                    part.text
-            )
-            .join("");
+    let text = "";
+
+
+    parts.forEach(
+        function (part) {
+
+            if (
+                part &&
+                typeof part.text === "string"
+            ) {
+
+                text += part.text;
+
+            }
+
+        }
+    );
 
 
     if (
@@ -873,6 +882,25 @@ async function askGeminiText(
     userMessage
 ) {
 
+    const prompt =
+        "You are Third Eye, a helpful AI assistant.\n\n" +
+
+        "Answer questions clearly and accurately.\n\n" +
+
+        "Be friendly and natural.\n\n" +
+
+        "For simple questions, give concise answers.\n\n" +
+
+        "For educational questions, explain things " +
+        "in an easy-to-understand way.\n\n" +
+
+        "Do not mention that you are connected to an API.\n\n" +
+
+        "User question:\n\n" +
+
+        userMessage;
+
+
     const contents = [
 
         {
@@ -885,21 +913,7 @@ async function askGeminiText(
                 {
 
                     text:
-                        `You are Third Eye, a helpful AI assistant.
-
-Answer questions clearly and accurately.
-
-Be friendly and natural.
-
-For simple questions, give concise answers.
-
-For educational questions, explain things in an easy-to-understand way.
-
-Do not mention that you are connected to an API.
-
-User question:
-
-${userMessage}`
+                        prompt
 
                 }
 
@@ -923,7 +937,7 @@ ${userMessage}`
 
 app.post(
     "/chat",
-    async (req, res) => {
+    async function (req, res) {
 
         try {
 
@@ -937,9 +951,7 @@ app.post(
             ) {
 
                 return res.status(400).send(
-
                     "Message is required."
-
                 );
 
             }
@@ -958,11 +970,8 @@ app.post(
 
 
             res.setHeader(
-
                 "Content-Type",
-
                 "text/plain; charset=utf-8"
-
             );
 
 
@@ -972,16 +981,11 @@ app.post(
 
         }
 
-        catch (
-            error
-        ) {
+        catch (error) {
 
             console.error(
-
                 "Third Eye chat error:",
-
                 error
-
             );
 
 
@@ -1009,15 +1013,10 @@ app.post(
    ===================================================== */
 
 async function askVisionModel(
-
     imageBase64,
-
     userMessage,
-
     res,
-
-    mimeType = "image/jpeg"
-
+    mimeType
 ) {
 
     try {
@@ -1055,11 +1054,7 @@ async function askVisionModel(
 
                 cleanBase64 =
                     cleanBase64.substring(
-
-                        cleanBase64.indexOf(
-                            ","
-                        ) + 1
-
+                        cleanBase64.indexOf(",") + 1
                     );
 
             }
@@ -1071,6 +1066,16 @@ async function askVisionModel(
             throw new Error(
                 "Invalid image data."
             );
+
+        }
+
+
+        if (
+            !mimeType
+        ) {
+
+            mimeType =
+                "image/jpeg";
 
         }
 
@@ -1125,11 +1130,8 @@ async function askVisionModel(
 
 
         res.setHeader(
-
             "Content-Type",
-
             "text/plain; charset=utf-8"
-
         );
 
 
@@ -1139,16 +1141,11 @@ async function askVisionModel(
 
     }
 
-    catch (
-        error
-    ) {
+    catch (error) {
 
         console.error(
-
             "Gemini Vision error:",
-
             error
-
         );
 
 
@@ -1184,6 +1181,10 @@ async function extractTextFromFile(
             .toLowerCase();
 
 
+    /* =================================================
+       TXT
+       ================================================= */
+
     if (
         fileName.endsWith(".txt")
     ) {
@@ -1194,6 +1195,10 @@ async function extractTextFromFile(
 
     }
 
+
+    /* =================================================
+       DOCX
+       ================================================= */
 
     if (
         fileName.endsWith(".docx")
@@ -1212,6 +1217,10 @@ async function extractTextFromFile(
 
     }
 
+
+    /* =================================================
+       PDF
+       ================================================= */
 
     if (
         fileName.endsWith(".pdf")
@@ -1259,12 +1268,9 @@ async function extractTextFromFile(
    ===================================================== */
 
 app.post(
-
     "/chat-with-file",
-
     upload.single("file"),
-
-    async (req, res) => {
+    async function (req, res) {
 
         try {
 
@@ -1273,9 +1279,7 @@ app.post(
             ) {
 
                 return res.status(400).send(
-
                     "No file was uploaded."
-
                 );
 
             }
@@ -1292,11 +1296,8 @@ app.post(
 
 
             console.log(
-
                 "File received:",
-
                 req.file.originalname
-
             );
 
 
@@ -1352,11 +1353,33 @@ app.post(
                 );
 
 
-                const documentText =
-                    await extractTextFromFile(
-                        req.file
+                let documentText = "";
+
+
+                try {
+
+                    documentText =
+                        await extractTextFromFile(
+                            req.file
+                        );
+
+                }
+
+                catch (pdfError) {
+
+                    console.error(
+                        "PDF text extraction error:",
+                        pdfError
                     );
 
+                    documentText = "";
+
+                }
+
+
+                /* =================================================
+                   PDF TEXT FOUND
+                   ================================================= */
 
                 if (
                     documentText &&
@@ -1368,6 +1391,27 @@ app.post(
                             0,
                             120000
                         );
+
+
+                    const prompt =
+                        "You are Third Eye, a helpful AI assistant.\n\n" +
+
+                        "The user uploaded a PDF.\n\n" +
+
+                        "Use the PDF text below as the primary " +
+                        "source for your answer.\n\n" +
+
+                        "PDF TEXT:\n\n" +
+
+                        "------------------------------\n\n" +
+
+                        trimmedText +
+
+                        "\n\n------------------------------\n\n" +
+
+                        "USER QUESTION:\n\n" +
+
+                        userMessage;
 
 
                     const contents = [
@@ -1382,24 +1426,7 @@ app.post(
                                 {
 
                                     text:
-
-`You are Third Eye, a helpful AI assistant.
-
-The user uploaded a PDF.
-
-Use the PDF text below as the primary source for your answer.
-
-PDF TEXT:
-
-------------------------------
-
-${trimmedText}
-
-------------------------------
-
-USER QUESTION:
-
-${userMessage}`
+                                        prompt
 
                                 }
 
@@ -1417,11 +1444,8 @@ ${userMessage}`
 
 
                     res.setHeader(
-
                         "Content-Type",
-
                         "text/plain; charset=utf-8"
-
                     );
 
 
@@ -1435,10 +1459,9 @@ ${userMessage}`
                 }
 
 
-                /*
-                   If PDF text extraction fails,
-                   render the first page and use Vision.
-                */
+                /* =================================================
+                   PDF VISION FALLBACK
+                   ================================================= */
 
                 console.log(
                     "PDF text extraction empty. Using PDF vision."
@@ -1481,9 +1504,7 @@ ${userMessage}`
                 ) {
 
                     return res.status(400).send(
-
                         "Could not read the PDF."
-
                     );
 
                 }
@@ -1530,34 +1551,24 @@ ${userMessage}`
             ) {
 
                 console.log(
-
                     "Extracting document text:",
-
                     req.file.originalname
-
                 );
 
 
                 const documentText =
                     await extractTextFromFile(
-
                         req.file
-
                     );
 
 
                 if (
-
                     !documentText ||
-
                     !documentText.trim()
-
                 ) {
 
                     return res.status(400).send(
-
                         "I couldn't extract readable text from this file."
-
                     );
 
                 }
@@ -1565,12 +1576,30 @@ ${userMessage}`
 
                 const trimmedText =
                     documentText.substring(
-
                         0,
-
                         120000
-
                     );
+
+
+                const prompt =
+                    "You are Third Eye, a helpful AI assistant.\n\n" +
+
+                    "The user uploaded a document.\n\n" +
+
+                    "Use the document below as the primary " +
+                    "source for answering the user's question.\n\n" +
+
+                    "DOCUMENT:\n\n" +
+
+                    "------------------------------\n\n" +
+
+                    trimmedText +
+
+                    "\n\n------------------------------\n\n" +
+
+                    "USER QUESTION:\n\n" +
+
+                    userMessage;
 
 
                 const contents = [
@@ -1585,24 +1614,7 @@ ${userMessage}`
                             {
 
                                 text:
-
-`You are Third Eye, a helpful AI assistant.
-
-The user uploaded a document.
-
-Use the document below as the primary source for answering the user's question.
-
-DOCUMENT:
-
-------------------------------
-
-${trimmedText}
-
-------------------------------
-
-USER QUESTION:
-
-${userMessage}`
+                                    prompt
 
                             }
 
@@ -1620,11 +1632,8 @@ ${userMessage}`
 
 
                 res.setHeader(
-
                     "Content-Type",
-
                     "text/plain; charset=utf-8"
-
                 );
 
 
@@ -1644,22 +1653,18 @@ ${userMessage}`
 
             return res.status(400).send(
 
-                "Unsupported file type. Supported files: JPG, JPEG, PNG, PDF, TXT and DOCX."
+                "Unsupported file type. Supported files: " +
+                "JPG, JPEG, PNG, PDF, TXT and DOCX."
 
             );
 
         }
 
-        catch (
-            error
-        ) {
+        catch (error) {
 
             console.error(
-
                 "File chat error:",
-
                 error
-
             );
 
 
@@ -1679,7 +1684,6 @@ ${userMessage}`
         }
 
     }
-
 );
 
 
@@ -1688,7 +1692,6 @@ ${userMessage}`
    ===================================================== */
 
 app.use(
-
     function (
         error,
         req,
@@ -1697,17 +1700,13 @@ app.use(
     ) {
 
         if (
-
             error instanceof
             multer.MulterError
-
         ) {
 
             if (
-
                 error.code ===
                 "LIMIT_FILE_SIZE"
-
             ) {
 
                 return res.status(400).send(
@@ -1722,11 +1721,8 @@ app.use(
 
 
         console.error(
-
             "Upload error:",
-
             error
-
         );
 
 
@@ -1743,7 +1739,6 @@ app.use(
         }
 
     }
-
 );
 
 
@@ -1752,12 +1747,9 @@ app.use(
    ===================================================== */
 
 app.listen(
-
     PORT,
-
     "0.0.0.0",
-
-    () => {
+    function () {
 
         console.log(
             "=================================="
@@ -1815,4 +1807,3 @@ app.listen(
 
     }
 );
-```
