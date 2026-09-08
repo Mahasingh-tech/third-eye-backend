@@ -63,6 +63,53 @@ let thinkingInterval = null;
 
 
 // =====================================================
+// PROCESSING LOCK
+// =====================================================
+
+// Prevents sending another message while one is processing.
+let isProcessing = false;
+
+
+function setProcessingState(processing) {
+
+    isProcessing = processing;
+
+    const sendButton =
+        document.getElementById(
+            "sendBtn"
+        );
+
+
+    if (sendButton) {
+
+        sendButton.disabled =
+            processing;
+
+
+        sendButton.style.opacity =
+            processing
+                ? "0.5"
+                : "1";
+
+
+        sendButton.style.cursor =
+            processing
+                ? "not-allowed"
+                : "pointer";
+
+    }
+
+}
+
+
+function finishProcessing() {
+
+    setProcessingState(false);
+
+}
+
+
+// =====================================================
 // THINKING MESSAGES
 // =====================================================
 
@@ -405,6 +452,17 @@ function loadName() {
 
 function sendMessage() {
 
+    // =================================================
+    // PROCESSING LOCK
+    // =================================================
+
+    if (isProcessing) {
+
+        return;
+
+    }
+
+
     const input =
         document.getElementById(
             "message"
@@ -430,6 +488,10 @@ function sendMessage() {
         return;
 
     }
+
+
+    // Lock sending immediately.
+    setProcessingState(true);
 
 
     const msg =
@@ -1459,6 +1521,10 @@ function sendBuiltInReply(reply) {
 
             saveChat();
 
+
+            // Unlock after built-in response finishes.
+            finishProcessing();
+
         },
         600
     );
@@ -1663,6 +1729,14 @@ async function askAI(usermessage) {
 
     }
 
+
+    finally {
+
+        // Always unlock Send button.
+        finishProcessing();
+
+    }
+
 }
 
 
@@ -1675,6 +1749,8 @@ async function askAIWithFile(usermessage) {
     if (
         selectedAttachments.length === 0
     ) {
+
+        finishProcessing();
 
         return;
 
@@ -1940,6 +2016,14 @@ async function askAIWithFile(usermessage) {
 
     }
 
+
+    finally {
+
+        // Always unlock Send button.
+        finishProcessing();
+
+    }
+
 }
 
 
@@ -2010,6 +2094,9 @@ function dictionaryDefinition(word) {
 
             );
 
+
+            finishProcessing();
+
         }
     )
 
@@ -2028,6 +2115,9 @@ function dictionaryDefinition(word) {
                 "</b>."
 
             );
+
+
+            finishProcessing();
 
         }
     );
@@ -2137,6 +2227,9 @@ function dictionarySynonyms(word) {
 
             );
 
+
+            finishProcessing();
+
         }
     )
 
@@ -2155,6 +2248,9 @@ function dictionarySynonyms(word) {
                 "</b>."
 
             );
+
+
+            finishProcessing();
 
         }
     );
@@ -2264,6 +2360,9 @@ function dictionaryAntonyms(word) {
 
             );
 
+
+            finishProcessing();
+
         }
     )
 
@@ -2282,6 +2381,9 @@ function dictionaryAntonyms(word) {
                 "</b>."
 
             );
+
+
+            finishProcessing();
 
         }
     );
@@ -2371,6 +2473,9 @@ function dictionaryExamples(word) {
 
                 );
 
+
+                finishProcessing();
+
                 return;
 
             }
@@ -2398,6 +2503,9 @@ function dictionaryExamples(word) {
 
             );
 
+
+            finishProcessing();
+
         }
     )
 
@@ -2416,6 +2524,9 @@ function dictionaryExamples(word) {
                 "</b>."
 
             );
+
+
+            finishProcessing();
 
         }
     );
@@ -2518,6 +2629,8 @@ function dictionaryPronunciation(word) {
                 );
 
 
+                finishProcessing();
+
                 return;
 
             }
@@ -2532,6 +2645,9 @@ function dictionaryPronunciation(word) {
                 "</b> yet."
 
             );
+
+
+            finishProcessing();
 
         },
         300
@@ -2695,6 +2811,9 @@ function wordOfTheDay() {
 
             );
 
+
+            finishProcessing();
+
         }
     )
 
@@ -2711,6 +2830,9 @@ function wordOfTheDay() {
                 "Sorry, I couldn't get the Word of the Day."
 
             );
+
+
+            finishProcessing();
 
         }
     );
@@ -2741,6 +2863,10 @@ function clearChat() {
     chatHistory = [];
 
     saveChat();
+
+
+    // Clear chat is instant.
+    finishProcessing();
 
 }
 
@@ -3078,6 +3204,15 @@ function checkEnter(event) {
 
         event.preventDefault();
 
+
+        // Processing lock also protects Enter.
+        if (isProcessing) {
+
+            return;
+
+        }
+
+
         sendMessage();
 
     }
@@ -3098,6 +3233,14 @@ function startListening() {
         alert(
             "Speech Recognition is not supported in this browser."
         );
+
+        return;
+
+    }
+
+
+    // Don't start another voice message while processing.
+    if (isProcessing) {
 
         return;
 
@@ -3375,6 +3518,14 @@ function toggleAttachmentMenu() {
 
 function selectImages() {
 
+    // Don't choose another attachment while processing.
+    if (isProcessing) {
+
+        return;
+
+    }
+
+
     const input =
         document.getElementById(
             "imageInput"
@@ -3394,6 +3545,14 @@ function selectImages() {
 
 
 function selectFiles() {
+
+    // Don't choose another attachment while processing.
+    if (isProcessing) {
+
+        return;
+
+    }
+
 
     const input =
         document.getElementById(
@@ -3438,6 +3597,16 @@ function closeAttachmentMenu() {
 
 function handleImages(event) {
 
+    if (isProcessing) {
+
+        event.target.value =
+            "";
+
+        return;
+
+    }
+
+
     const files =
         Array.from(
             event.target.files
@@ -3461,6 +3630,16 @@ function handleImages(event) {
 
 function handleFiles(event) {
 
+    if (isProcessing) {
+
+        event.target.value =
+            "";
+
+        return;
+
+    }
+
+
     const files =
         Array.from(
             event.target.files
@@ -3483,6 +3662,13 @@ function handleFiles(event) {
 // =====================================================
 
 function addAttachments(files) {
+
+    if (isProcessing) {
+
+        return;
+
+    }
+
 
     files.forEach(
         file => {
@@ -3588,6 +3774,14 @@ function displayAttachments() {
 // =====================================================
 
 function removeAttachment(index) {
+
+    // Don't change attachments during processing.
+    if (isProcessing) {
+
+        return;
+
+    }
+
 
     selectedAttachments.splice(
         index,
@@ -4520,6 +4714,13 @@ window.addEventListener(
         // =============================================
 
         loadDarkMode();
+
+
+        // =============================================
+        // SEND BUTTON INITIAL STATE
+        // =============================================
+
+        setProcessingState(false);
 
 
         // =============================================
