@@ -1693,11 +1693,16 @@ async function askAIWithFile(usermessage) {
         file.name.toLowerCase();
 
 
+    const fileType =
+        file.type || "";
+
+
     const isImage =
-        file.type.startsWith("image/") ||
+        fileType.startsWith("image/") ||
         lowerName.endsWith(".jpeg") ||
         lowerName.endsWith(".jpg") ||
-        lowerName.endsWith(".png");
+        lowerName.endsWith(".png") ||
+        lowerName.endsWith(".webp");
 
 
     if (isImage) {
@@ -1717,6 +1722,10 @@ async function askAIWithFile(usermessage) {
 
     try {
 
+        // =================================================
+        // CORRECTED FILE TYPES
+        // =================================================
+
         const allowedTypes = [
 
             ".pdf",
@@ -1724,18 +1733,35 @@ async function askAIWithFile(usermessage) {
             ".docx",
             ".jpeg",
             ".jpg",
-            ".png"
+            ".png",
+            ".webp"
 
         ];
 
 
-        const supported =
+        const supportedByExtension =
             allowedTypes.some(
-                extension =>
-                    lowerName.endsWith(
+                function (extension) {
+
+                    return lowerName.endsWith(
                         extension
-                    )
+                    );
+
+                }
             );
+
+
+        const supportedByMime =
+            fileType === "application/pdf" ||
+            fileType === "text/plain" ||
+            fileType ===
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+            fileType.startsWith("image/");
+
+
+        const supported =
+            supportedByExtension ||
+            supportedByMime;
 
 
         if (!supported) {
@@ -1745,7 +1771,7 @@ async function askAIWithFile(usermessage) {
 
             addMessage(
                 "bot",
-                "❌ This file type isn't supported yet. Please attach a PDF, TXT, DOCX, JPEG, JPG or PNG file."
+                "❌ This file type isn't supported yet. Please attach a PDF, TXT, DOCX, JPEG, JPG, PNG or WEBP file."
             );
 
 
