@@ -100,7 +100,7 @@ const GEMINI_API_KEY =
     process.env.GEMINI_API_KEY;
 
 const GEMINI_MODEL =
-    "gemini-2.5-flash";
+    "gemini-3.6-flash";
 
 
 /* =====================================================
