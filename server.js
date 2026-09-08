@@ -1300,6 +1300,11 @@ app.post(
                 req.file.originalname
             );
 
+            console.log(
+                "File MIME type:",
+                req.file.mimetype
+            );
+
 
             /* =================================================
                IMAGE
@@ -1311,7 +1316,9 @@ app.post(
 
                 fileName.endsWith(".jpeg") ||
 
-                fileName.endsWith(".png")
+                fileName.endsWith(".png") ||
+
+                fileName.endsWith(".webp")
 
             ) {
 
@@ -1330,7 +1337,11 @@ app.post(
                     res,
 
                     req.file.mimetype ||
-                    "image/jpeg"
+                    (
+                        fileName.endsWith(".webp")
+                            ? "image/webp"
+                            : "image/jpeg"
+                    )
 
                 );
 
@@ -1654,7 +1665,7 @@ app.post(
             return res.status(400).send(
 
                 "Unsupported file type. Supported files: " +
-                "JPG, JPEG, PNG, PDF, TXT and DOCX."
+                "JPG, JPEG, PNG, WEBP, PDF, TXT and DOCX."
 
             );
 
