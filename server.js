@@ -15,20 +15,6 @@ const app = express();
    CHATBOT LOCATION
    ===================================================== */
 
-/*
-   Render repository structure:
-
-   third-eye-backend
-   │
-   ├── server.js
-   ├── package.json
-   ├── sukoga.html
-   ├── style.css
-   ├── script.js
-   ├── images
-   └── other chatbot files
-*/
-
 const chatbotFolder = path.join(
     __dirname
 );
@@ -70,12 +56,6 @@ app.get(
    CHATBOT
    ===================================================== */
 
-/*
-   https://YOUR-RENDER-URL.onrender.com/chatbot
-
-   opens the Third Eye chatbot.
-*/
-
 app.get(
     "/chatbot",
     (req, res) => {
@@ -108,18 +88,9 @@ app.get(
 );
 
 
-/*
-   Serve chatbot files.
-
-   This allows sukoga.html to load:
-
-   style.css
-   script.js
-   images
-   logos
-   icons
-   etc.
-*/
+/* =====================================================
+   SERVE CHATBOT FILES
+   ===================================================== */
 
 app.use(
     "/chatbot",
@@ -133,6 +104,17 @@ app.use(
 
 const PORT =
     process.env.PORT || 3000;
+
+
+/* =====================================================
+   GEMINI SETTINGS
+   ===================================================== */
+
+const GEMINI_API_KEY =
+    process.env.GEMINI_API_KEY;
+
+const GEMINI_MODEL =
+    "gemini-2.5-flash";
 
 
 /* =====================================================
@@ -196,17 +178,29 @@ if (
 
 function getUsers() {
 
-    return JSON.parse(
+    try {
 
-        fs.readFileSync(
+        return JSON.parse(
 
-            USERS_FILE,
+            fs.readFileSync(
+                USERS_FILE,
+                "utf8"
+            )
 
-            "utf8"
+        );
 
-        )
+    }
 
-    );
+    catch (error) {
+
+        console.error(
+            "Could not read users file:",
+            error
+        );
+
+        return [];
+
+    }
 
 }
 
@@ -288,7 +282,6 @@ function checkPassword(
     const salt =
         parts[0];
 
-
     const originalHash =
         parts[1];
 
@@ -303,19 +296,29 @@ function checkPassword(
             .toString("hex");
 
 
-    return crypto.timingSafeEqual(
+    try {
 
-        Buffer.from(
-            hash,
-            "hex"
-        ),
+        return crypto.timingSafeEqual(
 
-        Buffer.from(
-            originalHash,
-            "hex"
-        )
+            Buffer.from(
+                hash,
+                "hex"
+            ),
 
-    );
+            Buffer.from(
+                originalHash,
+                "hex"
+            )
+
+        );
+
+    }
+
+    catch {
+
+        return false;
+
+    }
 
 }
 
@@ -323,16 +326,6 @@ function checkPassword(
 /* =====================================================
    TOKEN
    ===================================================== */
-
-/*
-   For Render:
-
-   Add TOKEN_SECRET inside
-   Render → Environment Variables.
-
-   A fallback is kept so the local server
-   still works if the variable is not set.
-*/
 
 const TOKEN_SECRET =
     process.env.TOKEN_SECRET ||
@@ -700,24 +693,28 @@ app.post(
 
 
 /* =====================================================
-   NORMAL OLLAMA CHAT
-   MODEL: LLAMA 3.2:3B
+   GEMINI API
    ===================================================== */
 
-async function streamFromOllama(
-
-    messages,
-
-    res,
-
-    model = "llama3.2:3b"
-
+async function callGemini(
+    contents
 ) {
+
+    if (
+        !GEMINI_API_KEY
+    ) {
+
+        throw new Error(
+            "GEMINI_API_KEY is missing from Render Environment Variables."
+        );
+
+    }
+
 
     const response =
         await fetch(
 
-            "http://localhost:11434/api/chat",
+            `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
 
             {
 
@@ -727,21 +724,29 @@ async function streamFromOllama(
                 headers: {
 
                     "Content-Type":
-                        "application/json"
+                        "application/json",
+
+                    "x-goog-api-key":
+                        GEMINI_API_KEY
 
                 },
 
                 body:
                     JSON.stringify({
 
-                        model:
-                            model,
+                        contents:
 
-                        messages:
-                            messages,
+                            contents,
 
-                        stream:
-                            true
+                        generationConfig: {
+
+                            temperature:
+                                0.7,
+
+                            maxOutputTokens:
+                                4096
+
+                        }
 
                     })
 
@@ -750,144 +755,253 @@ async function streamFromOllama(
         );
 
 
+    const responseText =
+        await response.text();
+
+
     if (
         !response.ok
     ) {
 
+        console.error(
+
+            "Gemini API error:",
+
+            response.status,
+
+            responseText
+
+        );
+
+
         throw new Error(
 
-            "Ollama returned status " +
-            response.status
+            "Gemini API returned status " +
+            response.status +
+            ": " +
+            responseText
 
         );
 
     }
 
 
-    res.setHeader(
-
-        "Content-Type",
-
-        "text/plain; charset=utf-8"
-
-    );
+    let data;
 
 
-    res.setHeader(
+    try {
 
-        "Transfer-Encoding",
+        data =
+            JSON.parse(
+                responseText
+            );
 
-        "chunked"
+    }
 
-    );
+    catch {
 
+        throw new Error(
+            "Gemini returned invalid JSON."
+        );
 
-    const reader =
-        response.body.getReader();
-
-
-    const decoder =
-        new TextDecoder();
+    }
 
 
-    while (
-        true
+    const parts =
+        data
+            ?.candidates
+            ?.0
+            ?.content
+            ?.parts;
+
+
+    if (
+        !Array.isArray(parts)
     ) {
 
-        const {
-            value,
-            done
-        } =
-            await reader.read();
+        console.error(
+            "Unexpected Gemini response:",
+            JSON.stringify(data)
+        );
+
+        throw new Error(
+            "Gemini returned no answer."
+        );
+
+    }
 
 
-        if (
-            done
-        ) {
+    const text =
+        parts
+            .filter(
+                part =>
+                    typeof part.text ===
+                    "string"
+            )
+            .map(
+                part =>
+                    part.text
+            )
+            .join("");
 
-            break;
+
+    if (
+        !text.trim()
+    ) {
+
+        throw new Error(
+            "Gemini returned an empty answer."
+        );
+
+    }
+
+
+    return text;
+
+}
+
+
+/* =====================================================
+   NORMAL TEXT CHAT
+   ===================================================== */
+
+async function askGeminiText(
+    userMessage
+) {
+
+    const contents = [
+
+        {
+
+            role:
+                "user",
+
+            parts: [
+
+                {
+
+                    text:
+                        `You are Third Eye, a helpful AI assistant.
+
+Answer questions clearly and accurately.
+
+Be friendly and natural.
+
+For simple questions, give concise answers.
+
+For educational questions, explain things in an easy-to-understand way.
+
+Do not mention that you are connected to an API.
+
+User question:
+
+${userMessage}`
+
+                }
+
+            ]
 
         }
 
-
-        const chunk =
-            decoder.decode(
-
-                value,
-
-                {
-                    stream:
-                        true
-                }
-
-            );
+    ];
 
 
-        const lines =
-            chunk.split(
-                "\n"
-            );
+    return await callGemini(
+        contents
+    );
+
+}
 
 
-        for (
-            const line of lines
-        ) {
+/* =====================================================
+   NORMAL CHAT ROUTE
+   ===================================================== */
+
+app.post(
+    "/chat",
+    async (req, res) => {
+
+        try {
+
+            const userMessage =
+                req.body.message;
+
 
             if (
-                !line.trim()
+                !userMessage ||
+                !String(userMessage).trim()
             ) {
 
-                continue;
+                return res.status(400).send(
+
+                    "Message is required."
+
+                );
 
             }
 
 
-            try {
-
-                const data =
-                    JSON.parse(
-                        line
-                    );
+            console.log(
+                "Text question received:",
+                userMessage
+            );
 
 
-                if (
+            const answer =
+                await askGeminiText(
+                    String(userMessage)
+                );
 
-                    data.message &&
-                    data.message.content
 
-                ) {
+            res.setHeader(
 
-                    res.write(
+                "Content-Type",
 
-                        data.message.content
+                "text/plain; charset=utf-8"
 
-                    );
+            );
 
-                }
 
-            }
+            res.send(
+                answer
+            );
 
-            catch (
+        }
+
+        catch (
+            error
+        ) {
+
+            console.error(
+
+                "Third Eye chat error:",
+
                 error
+
+            );
+
+
+            if (
+                !res.headersSent
             ) {
 
-                // Ignore incomplete JSON chunks
+                res.status(500).send(
+
+                    "Third Eye AI error: " +
+                    error.message
+
+                );
 
             }
 
         }
 
     }
-
-
-    res.end();
-
-}
+);
 
 
 /* =====================================================
-   QWEN VISION
-   MODEL: QWEN3-VL:2B
+   GEMINI VISION
    ===================================================== */
 
 async function askVisionModel(
@@ -896,7 +1010,9 @@ async function askVisionModel(
 
     userMessage,
 
-    res
+    res,
+
+    mimeType = "image/jpeg"
 
 ) {
 
@@ -919,10 +1035,8 @@ async function askVisionModel(
         }
 
         else if (
-
             typeof imageBase64 ===
             "string"
-
         ) {
 
             cleanBase64 =
@@ -930,11 +1044,9 @@ async function askVisionModel(
 
 
             if (
-
                 cleanBase64.startsWith(
                     "data:"
                 )
-
             ) {
 
                 cleanBase64 =
@@ -953,132 +1065,59 @@ async function askVisionModel(
         else {
 
             throw new Error(
-
-                "Vision image is not a Buffer or Base64 string."
-
+                "Invalid image data."
             );
 
         }
 
 
         console.log(
-            "Sending image to Qwen Vision..."
+            "Sending image to Gemini..."
         );
 
 
-        console.log(
-            "Image Base64 length:",
-            cleanBase64.length
-        );
+        const contents = [
 
+            {
 
-        const response =
-            await fetch(
+                role:
+                    "user",
 
-                "http://localhost:11434/api/chat",
+                parts: [
 
-                {
+                    {
 
-                    method:
-                        "POST",
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/json"
+                        text:
+                            userMessage ||
+                            "Analyze this image carefully and describe what you see."
 
                     },
 
-                    body:
-                        JSON.stringify({
+                    {
 
-                            model:
-                                "qwen3-vl:2b",
+                        inline_data: {
 
-                            messages: [
+                            mime_type:
+                                mimeType,
 
-                                {
+                            data:
+                                cleanBase64
 
-                                    role:
-                                        "user",
+                        }
 
-                                    content:
-                                        userMessage,
+                    }
 
-                                    images: [
+                ]
 
-                                        cleanBase64
+            }
 
-                                    ]
+        ];
 
-                                }
 
-                            ],
-
-                            stream:
-                                false
-
-                        })
-
-                }
-
+        const answer =
+            await callGemini(
+                contents
             );
-
-
-        if (
-            !response.ok
-        ) {
-
-            const errorText =
-                await response.text();
-
-
-            console.error(
-
-                "Qwen Vision error:",
-
-                response.status,
-
-                errorText
-
-            );
-
-
-            throw new Error(
-
-                "Qwen Vision returned status " +
-                response.status +
-                ": " +
-                errorText
-
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "Qwen Vision response received."
-        );
-
-
-        if (
-
-            !data.message ||
-            !data.message.content
-
-        ) {
-
-            throw new Error(
-
-                "Qwen Vision returned an empty response."
-
-            );
-
-        }
 
 
         res.setHeader(
@@ -1091,7 +1130,7 @@ async function askVisionModel(
 
 
         res.send(
-            data.message.content
+            answer
         );
 
     }
@@ -1102,7 +1141,7 @@ async function askVisionModel(
 
         console.error(
 
-            "Qwen Vision model error:",
+            "Gemini Vision error:",
 
             error
 
@@ -1122,103 +1161,9 @@ async function askVisionModel(
 
         }
 
-        else {
-
-            res.end();
-
-        }
-
     }
 
 }
-
-
-/* =====================================================
-   NORMAL CHAT ROUTE
-   ===================================================== */
-
-app.post(
-    "/chat",
-    async (req, res) => {
-
-        try {
-
-            const userMessage =
-                req.body.message;
-
-
-            if (
-                !userMessage
-            ) {
-
-                return res.status(400).send(
-
-                    "Message is required."
-
-                );
-
-            }
-
-
-            await streamFromOllama(
-
-                [
-
-                    {
-
-                        role:
-                            "user",
-
-                        content:
-                            userMessage
-
-                    }
-
-                ],
-
-                res,
-
-                "llama3.2:3b"
-
-            );
-
-        }
-
-        catch (
-            error
-        ) {
-
-            console.error(
-
-                "Third Eye server error:",
-
-                error
-
-            );
-
-
-            if (
-                !res.headersSent
-            ) {
-
-                res.status(500).send(
-
-                    "Sorry, Third Eye could not connect to Llama."
-
-                );
-
-            }
-
-            else {
-
-                res.end();
-
-            }
-
-        }
-
-    }
-);
 
 
 /* =====================================================
@@ -1352,7 +1297,7 @@ app.post(
 
 
             /* =================================================
-               IMAGE → QWEN VISION
+               IMAGE
                ================================================= */
 
             if (
@@ -1364,15 +1309,6 @@ app.post(
                 fileName.endsWith(".png")
 
             ) {
-
-                console.log(
-
-                    "Sending image to Qwen Vision:",
-
-                    req.file.originalname
-
-                );
-
 
                 const imageBase64 =
                     req.file.buffer.toString(
@@ -1386,7 +1322,10 @@ app.post(
 
                     userMessage,
 
-                    res
+                    res,
+
+                    req.file.mimetype ||
+                    "image/jpeg"
 
                 );
 
@@ -1397,7 +1336,7 @@ app.post(
 
 
             /* =================================================
-               PDF → QWEN VISION
+               PDF
                ================================================= */
 
             if (
@@ -1405,11 +1344,100 @@ app.post(
             ) {
 
                 console.log(
+                    "Reading PDF..."
+                );
 
-                    "Rendering PDF for Vision:",
 
-                    req.file.originalname
+                const documentText =
+                    await extractTextFromFile(
+                        req.file
+                    );
 
+
+                if (
+                    documentText &&
+                    documentText.trim()
+                ) {
+
+                    const trimmedText =
+                        documentText.substring(
+                            0,
+                            120000
+                        );
+
+
+                    const contents = [
+
+                        {
+
+                            role:
+                                "user",
+
+                            parts: [
+
+                                {
+
+                                    text:
+
+`You are Third Eye, a helpful AI assistant.
+
+The user uploaded a PDF.
+
+Use the PDF text below as the primary source for your answer.
+
+PDF TEXT:
+
+------------------------------
+
+${trimmedText}
+
+------------------------------
+
+USER QUESTION:
+
+${userMessage}`
+
+                                }
+
+                            ]
+
+                        }
+
+                    ];
+
+
+                    const answer =
+                        await callGemini(
+                            contents
+                        );
+
+
+                    res.setHeader(
+
+                        "Content-Type",
+
+                        "text/plain; charset=utf-8"
+
+                    );
+
+
+                    res.send(
+                        answer
+                    );
+
+
+                    return;
+
+                }
+
+
+                /*
+                   If PDF text extraction fails,
+                   render the first page and use Vision.
+                */
+
+                console.log(
+                    "PDF text extraction empty. Using PDF vision."
                 );
 
 
@@ -1422,8 +1450,10 @@ app.post(
                         req.file.buffer,
 
                         {
+
                             scale:
                                 1.5
+
                         }
 
                     );
@@ -1448,7 +1478,7 @@ app.post(
 
                     return res.status(400).send(
 
-                        "Could not render the PDF."
+                        "Could not read the PDF."
 
                     );
 
@@ -1465,22 +1495,15 @@ app.post(
                         );
 
 
-                console.log(
-
-                    "PDF first page Base64 length:",
-
-                    imageBase64.length
-
-                );
-
-
                 await askVisionModel(
 
                     imageBase64,
 
                     userMessage,
 
-                    res
+                    res,
+
+                    "image/png"
 
                 );
 
@@ -1491,7 +1514,7 @@ app.post(
 
 
             /* =================================================
-               TXT / DOCX → LLAMA
+               TXT / DOCX
                ================================================= */
 
             if (
@@ -1546,14 +1569,24 @@ app.post(
                     );
 
 
-                const systemPrompt = `
+                const contents = [
 
-You are Third Eye, a helpful local AI assistant.
+                    {
 
-The user attached a document.
+                        role:
+                            "user",
 
-Use the document below as the primary source
-for answering the user's question.
+                        parts: [
+
+                            {
+
+                                text:
+
+`You are Third Eye, a helpful AI assistant.
+
+The user uploaded a document.
+
+Use the document below as the primary source for answering the user's question.
 
 DOCUMENT:
 
@@ -1563,39 +1596,36 @@ ${trimmedText}
 
 ------------------------------
 
-`;
+USER QUESTION:
+
+${userMessage}`
+
+                            }
+
+                        ]
+
+                    }
+
+                ];
 
 
-                await streamFromOllama(
+                const answer =
+                    await callGemini(
+                        contents
+                    );
 
-                    [
 
-                        {
+                res.setHeader(
 
-                            role:
-                                "system",
+                    "Content-Type",
 
-                            content:
-                                systemPrompt
+                    "text/plain; charset=utf-8"
 
-                        },
+                );
 
-                        {
 
-                            role:
-                                "user",
-
-                            content:
-                                userMessage
-
-                        }
-
-                    ],
-
-                    res,
-
-                    "llama3.2:3b"
-
+                res.send(
+                    answer
                 );
 
 
@@ -1635,15 +1665,10 @@ ${trimmedText}
 
                 res.status(500).send(
 
-                    "Third Eye could not process the attached file."
+                    "Third Eye could not process the attached file: " +
+                    error.message
 
                 );
-
-            }
-
-            else {
-
-                res.end();
 
             }
 
@@ -1752,6 +1777,16 @@ app.listen(
 
         console.log(
             "/chatbot"
+        );
+
+        console.log(
+            "Gemini API:"
+        );
+
+        console.log(
+            GEMINI_API_KEY
+                ? "Configured"
+                : "MISSING"
         );
 
         console.log(
