@@ -1,3 +1,4 @@
+```javascript
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
@@ -735,7 +736,6 @@ async function callGemini(
                     JSON.stringify({
 
                         contents:
-
                             contents,
 
                         generationConfig: {
@@ -807,10 +807,14 @@ async function callGemini(
     }
 
 
+    /* =================================================
+       FIXED GEMINI RESPONSE ACCESS
+       ================================================= */
+
     const parts =
         data
             ?.candidates
-            ?.0
+            ?.[0]
             ?.content
             ?.parts;
 
@@ -1811,3 +1815,4 @@ app.listen(
 
     }
 );
+```
