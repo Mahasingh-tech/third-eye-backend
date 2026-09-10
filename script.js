@@ -1,4 +1,3 @@
-```javascript
 // =====================================================
 // THIRD EYE v1.0
 // Created by: Maha Singh
@@ -450,10 +449,8 @@ function saveChat() {
 
 
     // -------------------------------------------------
-    // If History was cleared, do not immediately bring
-    // the old current conversation back.
-    //
-    // A new message after clearing starts History again.
+    // If History was cleared, start History again
+    // with the current conversation.
     // -------------------------------------------------
 
     const historyWasCleared =
@@ -1694,7 +1691,19 @@ async function askAI(usermessage) {
         }
 
 
+        // =================================================
+        // IMPORTANT AI INSTRUCTION
+        // Prevent repeated greetings for normal questions.
+        // =================================================
+
         let finalMessage =
+            "IMPORTANT: Answer the user's question directly. " +
+            "Do NOT greet the user, introduce yourself, say " +
+            "'Hey there', say 'I'm your AI assistant', or " +
+            "repeat a welcome message unless the user's actual " +
+            "message is a greeting. If the user asks a normal " +
+            "question, give only the relevant answer.\n\n" +
+            "User's question:\n" +
             usermessage;
 
 
@@ -1711,7 +1720,7 @@ async function askAI(usermessage) {
 
         const response =
             await fetch(
-                ${AUTH_SERVER}/chat,
+                `${AUTH_SERVER}/chat`,
                 {
 
                     method:
@@ -1991,7 +2000,7 @@ async function askAIWithFile(usermessage) {
 
         const response =
             await fetch(
-                ${AUTH_SERVER}/chat-with-file,
+                `${AUTH_SERVER}/chat-with-file`,
                 {
 
                     method:
@@ -3088,23 +3097,18 @@ function clearHistory() {
     // Do NOT clear the current chat.
     // =================================================
 
-    // Store an actual empty history instead of removing
-    // the key. This prevents showHistory() from thinking
-    // that History is missing and restoring old chat.
     localStorage.setItem(
         historyKey,
         JSON.stringify([])
     );
 
 
-    // Mark that the user intentionally cleared History.
     localStorage.setItem(
         clearedKey,
         "true"
     );
 
 
-    // Close the history panel if it is open.
     const overlay =
         document.getElementById(
             "history-overlay"
@@ -3151,14 +3155,6 @@ function showHistory() {
 
     // =================================================
     // OLD STORAGE MIGRATION
-    // =================================================
-
-    // Only migrate old/current chat when the History key
-    // genuinely does NOT exist.
-    //
-    // IMPORTANT:
-    // An existing [] means the user intentionally cleared
-    // History, so we must NOT restore the current chat.
     // =================================================
 
     if (
@@ -5041,4 +5037,3 @@ window.addEventListener(
 
     }
 );
-```
