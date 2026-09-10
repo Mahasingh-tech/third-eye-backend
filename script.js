@@ -1,3 +1,4 @@
+```javascript
 // =====================================================
 // THIRD EYE v1.0
 // Created by: Maha Singh
@@ -56,6 +57,17 @@ function getHistoryStorageKey() {
         "thirdEyeChat_",
         "thirdEyeHistory_"
     );
+
+}
+
+
+// =====================================================
+// HISTORY CLEARED FLAG
+// =====================================================
+
+function getHistoryClearedKey() {
+
+    return getHistoryStorageKey() + "_cleared";
 
 }
 
@@ -424,6 +436,9 @@ function saveChat() {
     const historyKey =
         getHistoryStorageKey();
 
+    const clearedKey =
+        getHistoryClearedKey();
+
 
     // Save current chat.
     localStorage.setItem(
@@ -432,6 +447,28 @@ function saveChat() {
             chatHistory
         )
     );
+
+
+    // -------------------------------------------------
+    // If History was cleared, do not immediately bring
+    // the old current conversation back.
+    //
+    // A new message after clearing starts History again.
+    // -------------------------------------------------
+
+    const historyWasCleared =
+        localStorage.getItem(
+            clearedKey
+        ) === "true";
+
+
+    if (historyWasCleared) {
+
+        localStorage.removeItem(
+            clearedKey
+        );
+
+    }
 
 
     // Save a separate copy for History.
@@ -3037,14 +3074,33 @@ function clearHistory() {
     }
 
 
+    const historyKey =
+        getHistoryStorageKey();
+
+
+    const clearedKey =
+        getHistoryClearedKey();
+
+
     // =================================================
     // IMPORTANT:
     // Clear ONLY History.
     // Do NOT clear the current chat.
     // =================================================
 
-    localStorage.removeItem(
-        getHistoryStorageKey()
+    // Store an actual empty history instead of removing
+    // the key. This prevents showHistory() from thinking
+    // that History is missing and restoring old chat.
+    localStorage.setItem(
+        historyKey,
+        JSON.stringify([])
+    );
+
+
+    // Mark that the user intentionally cleared History.
+    localStorage.setItem(
+        clearedKey,
+        "true"
     );
 
 
@@ -3081,20 +3137,32 @@ function showHistory() {
         getHistoryStorageKey();
 
 
+    const historyStored =
+        localStorage.getItem(
+            historyKey
+        );
+
+
     let history =
-        JSON.parse(
-            localStorage.getItem(
-                historyKey
-            )
-        ) || [];
+        historyStored
+            ? JSON.parse(historyStored)
+            : [];
 
 
     // =================================================
     // OLD STORAGE MIGRATION
     // =================================================
 
+    // Only migrate old/current chat when the History key
+    // genuinely does NOT exist.
+    //
+    // IMPORTANT:
+    // An existing [] means the user intentionally cleared
+    // History, so we must NOT restore the current chat.
+    // =================================================
+
     if (
-        history.length === 0
+        historyStored === null
     ) {
 
         const oldChat =
@@ -4973,3 +5041,4 @@ window.addEventListener(
 
     }
 );
+```
