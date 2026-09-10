@@ -44,6 +44,23 @@ function getChatStorageKey() {
 
 
 // =====================================================
+// HISTORY STORAGE KEY
+// =====================================================
+
+function getHistoryStorageKey() {
+
+    const chatKey =
+        getChatStorageKey();
+
+    return chatKey.replace(
+        "thirdEyeChat_",
+        "thirdEyeHistory_"
+    );
+
+}
+
+
+// =====================================================
 // GLOBAL VARIABLES
 // =====================================================
 
@@ -405,14 +422,28 @@ function removeTyping() {
 
 function saveChat() {
 
+    const chatKey =
+        getChatStorageKey();
+
+    const historyKey =
+        getHistoryStorageKey();
+
+
+    // Save the current chat separately.
     localStorage.setItem(
-
-        getChatStorageKey(),
-
+        chatKey,
         JSON.stringify(
             chatHistory
         )
+    );
 
+
+    // Save a separate copy for History.
+    localStorage.setItem(
+        historyKey,
+        JSON.stringify(
+            chatHistory
+        )
     );
 
 }
@@ -2860,12 +2891,25 @@ function clearChat() {
     }
 
 
+    // Clear ONLY the current chat.
     chatHistory = [];
 
-    saveChat();
+
+    localStorage.setItem(
+
+        getChatStorageKey(),
+
+        JSON.stringify(
+            []
+        )
+
+    );
 
 
-    // Clear chat is instant.
+    // IMPORTANT:
+    // Do NOT call saveChat() here.
+    // saveChat() also updates History.
+
     finishProcessing();
 
 }
@@ -2890,6 +2934,13 @@ function clearHistory() {
     }
 
 
+    // Remove saved History.
+    localStorage.removeItem(
+        getHistoryStorageKey()
+    );
+
+
+    // Also clear current chat.
     localStorage.removeItem(
         getChatStorageKey()
     );
@@ -2925,12 +2976,57 @@ function clearHistory() {
 
 function showHistory() {
 
-    const history =
+    const historyKey =
+        getHistoryStorageKey();
+
+
+    let history =
         JSON.parse(
             localStorage.getItem(
-                getChatStorageKey()
+                historyKey
             )
         ) || [];
+
+
+    // =================================================
+    // OLD STORAGE MIGRATION
+    // =================================================
+    // If History was created by the old version,
+    // use the old chat storage once.
+
+    if (
+        history.length === 0
+    ) {
+
+        const oldChat =
+            JSON.parse(
+                localStorage.getItem(
+                    getChatStorageKey()
+                )
+            ) || [];
+
+
+        if (
+            oldChat.length > 0
+        ) {
+
+            history =
+                oldChat;
+
+
+            localStorage.setItem(
+
+                historyKey,
+
+                JSON.stringify(
+                    history
+                )
+
+            );
+
+        }
+
+    }
 
 
     const overlay =
