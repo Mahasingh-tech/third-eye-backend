@@ -1991,7 +1991,7 @@ async function askAIWithFile(usermessage) {
 
         const response =
             await fetch(
-                `${AUTH_SERVER}/chat-with-file`,
+                ${AUTH_SERVER}/chat-with-file,
                 {
 
                     method:
