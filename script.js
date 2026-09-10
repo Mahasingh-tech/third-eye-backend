@@ -1711,7 +1711,7 @@ async function askAI(usermessage) {
 
         const response =
             await fetch(
-                `${AUTH_SERVER}/chat`,
+                ${AUTH_SERVER}/chat,
                 {
 
                     method:
