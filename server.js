@@ -711,165 +711,296 @@ async function callGemini(contents) {
         ":generateContent";
 
 
-    const response =
-        await fetch(
-            geminiURL,
-            {
+    /*
+     * Gemini can temporarily return 503 when the model
+     * is under heavy demand.
+     *
+     * We retry the request up to 4 times.
+     */
 
-                method:
-                    "POST",
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json",
-
-                    "x-goog-api-key":
-                        GEMINI_API_KEY
-
-                },
-
-                body:
-                    JSON.stringify({
-
-                        contents:
-                            contents,
-
-                        generationConfig: {
-
-                            temperature:
-                                0.7,
-
-                            maxOutputTokens:
-                                4096
-
-                        }
-
-                    })
-
-            }
-        );
+    const maxAttempts = 4;
 
 
-    const responseText =
-        await response.text();
-
-
-    if (
-        !response.ok
+    for (
+        let attempt = 1;
+        attempt <= maxAttempts;
+        attempt++
     ) {
 
-        console.error(
-            "Gemini API error:",
-            response.status,
-            responseText
-        );
+        try {
 
-
-        throw new Error(
-            "Gemini API returned status " +
-            response.status +
-            ": " +
-            responseText
-        );
-
-    }
-
-
-    let data;
-
-
-    try {
-
-        data =
-            JSON.parse(
-                responseText
+            console.log(
+                "Gemini request attempt " +
+                attempt +
+                "/" +
+                maxAttempts
             );
 
-    }
 
-    catch (error) {
+            const response =
+                await fetch(
+                    geminiURL,
+                    {
 
-        throw new Error(
-            "Gemini returned invalid JSON."
-        );
+                        method:
+                            "POST",
 
-    }
+                        headers: {
 
+                            "Content-Type":
+                                "application/json",
 
-    /* =================================================
-       READ GEMINI RESPONSE
-       ================================================= */
+                            "x-goog-api-key":
+                                GEMINI_API_KEY
 
-    let parts = null;
+                        },
 
+                        body:
+                            JSON.stringify({
 
-    if (
-        data &&
-        data.candidates &&
-        Array.isArray(data.candidates) &&
-        data.candidates.length > 0 &&
-        data.candidates[0] &&
-        data.candidates[0].content &&
-        Array.isArray(
-            data.candidates[0].content.parts
-        )
-    ) {
+                                contents:
+                                    contents,
 
-        parts =
-            data.candidates[0].content.parts;
+                                generationConfig: {
 
-    }
+                                    temperature:
+                                        0.7,
 
+                                    maxOutputTokens:
+                                        4096
 
-    if (
-        !Array.isArray(parts)
-    ) {
+                                }
 
-        console.error(
-            "Unexpected Gemini response:",
-            JSON.stringify(data)
-        );
+                            })
+
+                    }
+                );
 
 
-        throw new Error(
-            "Gemini returned no answer."
-        );
-
-    }
+            const responseText =
+                await response.text();
 
 
-    let text = "";
-
-
-    parts.forEach(
-        function (part) {
+            /* =================================================
+               TEMPORARY 503 RETRY
+               ================================================= */
 
             if (
-                part &&
-                typeof part.text === "string"
+                response.status === 503 &&
+                attempt < maxAttempts
             ) {
 
-                text += part.text;
+                const waitTime =
+                    Math.pow(
+                        2,
+                        attempt
+                    ) * 2000;
+
+
+                console.warn(
+                    "Gemini returned 503. " +
+                    "Retrying in " +
+                    (waitTime / 1000) +
+                    " seconds..."
+                );
+
+
+                await new Promise(
+                    function (resolve) {
+
+                        setTimeout(
+                            resolve,
+                            waitTime
+                        );
+
+                    }
+                );
+
+
+                continue;
 
             }
 
+
+            /* =================================================
+               OTHER GEMINI ERRORS
+               ================================================= */
+
+            if (
+                !response.ok
+            ) {
+
+                console.error(
+                    "Gemini API error:",
+                    response.status,
+                    responseText
+                );
+
+
+                throw new Error(
+                    "Gemini API returned status " +
+                    response.status +
+                    ": " +
+                    responseText
+                );
+
+            }
+
+
+            /* =================================================
+               PARSE GEMINI RESPONSE
+               ================================================= */
+
+            let data;
+
+
+            try {
+
+                data =
+                    JSON.parse(
+                        responseText
+                    );
+
+            }
+
+            catch (error) {
+
+                throw new Error(
+                    "Gemini returned invalid JSON."
+                );
+
+            }
+
+
+            /* =================================================
+               READ GEMINI RESPONSE
+               ================================================= */
+
+            let parts = null;
+
+
+            if (
+                data &&
+                data.candidates &&
+                Array.isArray(data.candidates) &&
+                data.candidates.length > 0 &&
+                data.candidates[0] &&
+                data.candidates[0].content &&
+                Array.isArray(
+                    data.candidates[0].content.parts
+                )
+            ) {
+
+                parts =
+                    data.candidates[0].content.parts;
+
+            }
+
+
+            if (
+                !Array.isArray(parts)
+            ) {
+
+                console.error(
+                    "Unexpected Gemini response:",
+                    JSON.stringify(data)
+                );
+
+
+                throw new Error(
+                    "Gemini returned no answer."
+                );
+
+            }
+
+
+            let text = "";
+
+
+            parts.forEach(
+                function (part) {
+
+                    if (
+                        part &&
+                        typeof part.text === "string"
+                    ) {
+
+                        text += part.text;
+
+                    }
+
+                }
+            );
+
+
+            if (
+                !text.trim()
+            ) {
+
+                throw new Error(
+                    "Gemini returned an empty answer."
+                );
+
+            }
+
+
+            return text;
+
         }
-    );
+
+        catch (error) {
+
+            /*
+             * Retry temporary/network failures.
+             * If this is the final attempt, stop retrying.
+             */
+
+            if (
+                attempt >= maxAttempts
+            ) {
+
+                console.error(
+                    "Gemini failed after " +
+                    maxAttempts +
+                    " attempts:",
+                    error
+                );
 
 
-    if (
-        !text.trim()
-    ) {
+                throw error;
 
-        throw new Error(
-            "Gemini returned an empty answer."
-        );
+            }
+
+
+            console.warn(
+                "Gemini request failed on attempt " +
+                attempt +
+                ":",
+                error.message
+            );
+
+
+            const waitTime =
+                Math.pow(
+                    2,
+                    attempt
+                ) * 2000;
+
+
+            await new Promise(
+                function (resolve) {
+
+                    setTimeout(
+                        resolve,
+                        waitTime
+                    );
+
+                }
+            );
+
+        }
 
     }
-
-
-    return text;
 
 }
 
