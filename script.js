@@ -137,6 +137,100 @@ function finishProcessing() {
 
 
 // =====================================================
+// ANSWER NOTIFICATIONS
+// =====================================================
+
+async function requestNotificationPermission() {
+
+    if (!("Notification" in window)) {
+
+        return;
+
+    }
+
+
+    if (
+        Notification.permission ===
+        "default"
+    ) {
+
+        try {
+
+            await Notification.requestPermission();
+
+        }
+
+        catch (error) {
+
+            console.log(
+                "Notification permission error:",
+                error
+            );
+
+        }
+
+    }
+
+}
+
+
+function notifyThirdEyeAnswered() {
+
+    if (!("Notification" in window)) {
+
+        return;
+
+    }
+
+
+    if (
+        Notification.permission !==
+        "granted"
+    ) {
+
+        return;
+
+    }
+
+
+    // Notify only when the user is away
+    // from the Third Eye tab.
+
+    if (!document.hidden) {
+
+        return;
+
+    }
+
+
+    const notification =
+        new Notification(
+            "Third Eye has answered",
+            {
+
+                body:
+                    "Your answer is ready. 🔔",
+
+                icon:
+                    "images/s2.jpeg"
+
+            }
+        );
+
+
+    notification.onclick =
+        function () {
+
+            window.focus();
+
+            notification.close();
+
+        };
+
+}
+
+
+// =====================================================
 // THINKING MESSAGES
 // =====================================================
 
@@ -504,6 +598,8 @@ function saveDictionaryReply(reply) {
 
     saveChat();
 
+    notifyThirdEyeAnswered();
+
     finishProcessing();
 
 }
@@ -578,6 +674,12 @@ function sendMessage() {
 
 
     setProcessingState(true);
+
+
+    // Ask for browser notification permission
+    // from the user's send action.
+
+    requestNotificationPermission();
 
 
     const msg =
@@ -1641,6 +1743,8 @@ function sendBuiltInReply(reply) {
 
             saveChat();
 
+            notifyThirdEyeAnswered();
+
 
             finishProcessing();
 
@@ -1832,6 +1936,8 @@ async function askAI(usermessage) {
 
 
         saveChat();
+
+        notifyThirdEyeAnswered();
 
 
         selectedAttachments = [];
@@ -2104,6 +2210,8 @@ async function askAIWithFile(usermessage) {
 
 
         saveChat();
+
+        notifyThirdEyeAnswered();
 
 
         selectedAttachments = [];
@@ -2807,6 +2915,8 @@ function dictionaryPronunciation(word) {
 
 
                 saveChat();
+
+                notifyThirdEyeAnswered();
 
 
                 speakPronunciation(
