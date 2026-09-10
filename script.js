@@ -83,7 +83,6 @@ let thinkingInterval = null;
 // PROCESSING LOCK
 // =====================================================
 
-// Prevents sending another message while one is processing.
 let isProcessing = false;
 
 
@@ -130,7 +129,6 @@ function finishProcessing() {
 // THINKING MESSAGES
 // =====================================================
 
-// NORMAL TEXT MESSAGES
 const textThinkingMessages = [
 
     "🤔 Thinking...",
@@ -146,7 +144,6 @@ const textThinkingMessages = [
 ];
 
 
-// IMAGE MESSAGES
 const imageThinkingMessages = [
 
     "👁️ Analyzing image...",
@@ -166,7 +163,6 @@ const imageThinkingMessages = [
 ];
 
 
-// FILE MESSAGES
 const fileThinkingMessages = [
 
     "📄 Reading file...",
@@ -429,7 +425,7 @@ function saveChat() {
         getHistoryStorageKey();
 
 
-    // Save the current chat separately.
+    // Save current chat.
     localStorage.setItem(
         chatKey,
         JSON.stringify(
@@ -445,6 +441,36 @@ function saveChat() {
             chatHistory
         )
     );
+
+}
+
+
+// =====================================================
+// SAVE DICTIONARY REPLY
+// =====================================================
+
+function saveDictionaryReply(reply) {
+
+    addMessage(
+        "bot",
+        reply
+    );
+
+
+    chatHistory.push({
+
+        type:
+            "bot",
+
+        text:
+            reply
+
+    });
+
+
+    saveChat();
+
+    finishProcessing();
 
 }
 
@@ -483,10 +509,6 @@ function loadName() {
 
 function sendMessage() {
 
-    // =================================================
-    // PROCESSING LOCK
-    // =================================================
-
     if (isProcessing) {
 
         return;
@@ -521,7 +543,6 @@ function sendMessage() {
     }
 
 
-    // Lock sending immediately.
     setProcessingState(true);
 
 
@@ -1239,7 +1260,9 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(7);
+                msg.substring(
+                    "define ".length
+                );
 
         }
 
@@ -1248,16 +1271,22 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(11);
+                msg.substring(
+                    "meaning of ".length
+                );
 
         }
 
         else {
 
             word =
-                msg.substring(10)
-                    .replace(" mean", "")
-                    .replace(" means", "");
+                msg.substring(
+                    "what does ".length
+                )
+                .replace(
+                    /\s+(mean|means)$/i,
+                    ""
+                );
 
         }
 
@@ -1291,7 +1320,9 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(11);
+                msg.substring(
+                    "synonym of ".length
+                );
 
         }
 
@@ -1300,14 +1331,18 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(12);
+                msg.substring(
+                    "synonyms of ".length
+                );
 
         }
 
         else {
 
             word =
-                msg.substring(20);
+                msg.substring(
+                    "give me synonyms of ".length
+                );
 
         }
 
@@ -1342,7 +1377,9 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(11);
+                msg.substring(
+                    "antonym of ".length
+                );
 
         }
 
@@ -1351,7 +1388,9 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(12);
+                msg.substring(
+                    "antonyms of ".length
+                );
 
         }
 
@@ -1360,14 +1399,18 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(12);
+                msg.substring(
+                    "opposite of ".length
+                );
 
         }
 
         else {
 
             word =
-                msg.substring(20);
+                msg.substring(
+                    "give me antonyms of ".length
+                );
 
         }
 
@@ -1404,7 +1447,9 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(11);
+                msg.substring(
+                    "example of ".length
+                );
 
         }
 
@@ -1413,18 +1458,22 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(4)
-                    .replace(
-                        " in a sentence",
-                        ""
-                    );
+                msg.substring(
+                    "use ".length
+                )
+                .replace(
+                    " in a sentence",
+                    ""
+                );
 
         }
 
         else {
 
             word =
-                msg.substring(14);
+                msg.substring(
+                    "sentence with ".length
+                );
 
         }
 
@@ -1458,7 +1507,9 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(10);
+                msg.substring(
+                    "pronounce ".length
+                );
 
         }
 
@@ -1467,14 +1518,18 @@ function sendMessage() {
         ) {
 
             word =
-                msg.substring(18);
+                msg.substring(
+                    "pronunciation of ".length
+                );
 
         }
 
         else {
 
             word =
-                msg.substring(22);
+                msg.substring(
+                    "how do you pronounce ".length
+                );
 
         }
 
@@ -1553,7 +1608,6 @@ function sendBuiltInReply(reply) {
             saveChat();
 
 
-            // Unlock after built-in response finishes.
             finishProcessing();
 
         },
@@ -1569,7 +1623,6 @@ function sendBuiltInReply(reply) {
 
 async function askAI(usermessage) {
 
-    // NORMAL TEXT = NORMAL THINKING
     showTyping("text");
 
 
@@ -1763,7 +1816,6 @@ async function askAI(usermessage) {
 
     finally {
 
-        // Always unlock Send button.
         finishProcessing();
 
     }
@@ -1792,10 +1844,6 @@ async function askAIWithFile(usermessage) {
         selectedAttachments[0];
 
 
-    // =================================================
-    // CHOOSE CORRECT THINKING MESSAGE
-    // =================================================
-
     const lowerName =
         file.name.toLowerCase();
 
@@ -1814,24 +1862,18 @@ async function askAIWithFile(usermessage) {
 
     if (isImage) {
 
-        // IMAGE = IMAGE ANALYSIS ANIMATION
         showTyping("image");
 
     }
 
     else {
 
-        // PDF / TXT / DOCX = FILE READING ANIMATION
         showTyping("file");
 
     }
 
 
     try {
-
-        // =================================================
-        // CORRECTED FILE TYPES
-        // =================================================
 
         const allowedTypes = [
 
@@ -1885,6 +1927,8 @@ async function askAIWithFile(usermessage) {
             selectedAttachments = [];
 
             displayAttachments();
+
+            finishProcessing();
 
             return;
 
@@ -2050,7 +2094,6 @@ async function askAIWithFile(usermessage) {
 
     finally {
 
-        // Always unlock Send button.
         finishProcessing();
 
     }
@@ -2063,6 +2106,20 @@ async function askAIWithFile(usermessage) {
 // =====================================================
 
 function dictionaryDefinition(word) {
+
+    if (!word) {
+
+        addMessage(
+            "bot",
+            "Please provide a word. Example: <b>define happy</b>"
+        );
+
+        finishProcessing();
+
+        return;
+
+    }
+
 
     showTyping("text");
 
@@ -2109,24 +2166,30 @@ function dictionaryDefinition(word) {
                 meaning.partOfSpeech || "";
 
 
-            addMessage(
+            const reply =
 
-                "bot",
-
-                "<b>" +
+                "<b>📖 " +
                 escapeHTML(word) +
                 "</b><br>" +
 
-                "<i>" +
-                escapeHTML(partOfSpeech) +
-                "</i><br>" +
+                (
+                    partOfSpeech
+                        ? "<i>" +
+                          escapeHTML(
+                              partOfSpeech
+                          ) +
+                          "</i><br>"
+                        : ""
+                ) +
 
-                escapeHTML(definition)
+                escapeHTML(
+                    definition
+                );
 
+
+            saveDictionaryReply(
+                reply
             );
-
-
-            finishProcessing();
 
         }
     )
@@ -2137,18 +2200,13 @@ function dictionaryDefinition(word) {
             removeTyping();
 
 
-            addMessage(
-
-                "bot",
+            saveDictionaryReply(
 
                 "Sorry, I couldn't find a definition for <b>" +
                 escapeHTML(word) +
                 "</b>."
 
             );
-
-
-            finishProcessing();
 
         }
     );
@@ -2161,6 +2219,20 @@ function dictionaryDefinition(word) {
 // =====================================================
 
 function dictionarySynonyms(word) {
+
+    if (!word) {
+
+        addMessage(
+            "bot",
+            "Please provide a word. Example: <b>synonym of happy</b>"
+        );
+
+        finishProcessing();
+
+        return;
+
+    }
+
 
     showTyping("text");
 
@@ -2247,19 +2319,17 @@ function dictionarySynonyms(word) {
                     : "No synonyms found.";
 
 
-            addMessage(
-
-                "bot",
+            const reply =
 
                 "<b>Synonyms of " +
                 escapeHTML(word) +
                 ":</b><br>" +
-                escapeHTML(text)
+                escapeHTML(text);
 
+
+            saveDictionaryReply(
+                reply
             );
-
-
-            finishProcessing();
 
         }
     )
@@ -2270,18 +2340,13 @@ function dictionarySynonyms(word) {
             removeTyping();
 
 
-            addMessage(
-
-                "bot",
+            saveDictionaryReply(
 
                 "Sorry, I couldn't find synonyms for <b>" +
                 escapeHTML(word) +
                 "</b>."
 
             );
-
-
-            finishProcessing();
 
         }
     );
@@ -2294,6 +2359,20 @@ function dictionarySynonyms(word) {
 // =====================================================
 
 function dictionaryAntonyms(word) {
+
+    if (!word) {
+
+        addMessage(
+            "bot",
+            "Please provide a word. Example: <b>antonym of happy</b>"
+        );
+
+        finishProcessing();
+
+        return;
+
+    }
+
 
     showTyping("text");
 
@@ -2380,19 +2459,17 @@ function dictionaryAntonyms(word) {
                     : "No antonyms found.";
 
 
-            addMessage(
-
-                "bot",
+            const reply =
 
                 "<b>Antonyms of " +
                 escapeHTML(word) +
                 ":</b><br>" +
-                escapeHTML(text)
+                escapeHTML(text);
 
+
+            saveDictionaryReply(
+                reply
             );
-
-
-            finishProcessing();
 
         }
     )
@@ -2403,18 +2480,13 @@ function dictionaryAntonyms(word) {
             removeTyping();
 
 
-            addMessage(
-
-                "bot",
+            saveDictionaryReply(
 
                 "Sorry, I couldn't find antonyms for <b>" +
                 escapeHTML(word) +
                 "</b>."
 
             );
-
-
-            finishProcessing();
 
         }
     );
@@ -2427,6 +2499,20 @@ function dictionaryAntonyms(word) {
 // =====================================================
 
 function dictionaryExamples(word) {
+
+    if (!word) {
+
+        addMessage(
+            "bot",
+            "Please provide a word. Example: <b>example of happy</b>"
+        );
+
+        finishProcessing();
+
+        return;
+
+    }
+
 
     showTyping("text");
 
@@ -2494,18 +2580,13 @@ function dictionaryExamples(word) {
                 examples.length === 0
             ) {
 
-                addMessage(
-
-                    "bot",
+                saveDictionaryReply(
 
                     "I couldn't find an example sentence for <b>" +
                     escapeHTML(word) +
                     "</b>."
 
                 );
-
-
-                finishProcessing();
 
                 return;
 
@@ -2523,19 +2604,17 @@ function dictionaryExamples(word) {
                     .join("<br>");
 
 
-            addMessage(
-
-                "bot",
+            const reply =
 
                 "<b>Examples of " +
                 escapeHTML(word) +
                 ":</b><br><br>" +
-                text
+                text;
 
+
+            saveDictionaryReply(
+                reply
             );
-
-
-            finishProcessing();
 
         }
     )
@@ -2546,18 +2625,13 @@ function dictionaryExamples(word) {
             removeTyping();
 
 
-            addMessage(
-
-                "bot",
+            saveDictionaryReply(
 
                 "Sorry, I couldn't find an example for <b>" +
                 escapeHTML(word) +
                 "</b>."
 
             );
-
-
-            finishProcessing();
 
         }
     );
@@ -2570,6 +2644,20 @@ function dictionaryExamples(word) {
 // =====================================================
 
 function dictionaryPronunciation(word) {
+
+    if (!word) {
+
+        addMessage(
+            "bot",
+            "Please provide a word. Example: <b>pronounce curious</b>"
+        );
+
+        finishProcessing();
+
+        return;
+
+    }
+
 
     showTyping("text");
 
@@ -2629,9 +2717,14 @@ function dictionaryPronunciation(word) {
                     ];
 
 
-                addMessage(
+                const safePronunciation =
+                    pronunciation.replace(
+                        /'/g,
+                        "\\'"
+                    );
 
-                    "bot",
+
+                const reply =
 
                     "<b>🔊 Pronunciation of " +
                     escapeHTML(word) +
@@ -2642,17 +2735,32 @@ function dictionaryPronunciation(word) {
                     "</strong><br><br>" +
 
                     "<button onclick=\"speakPronunciation('" +
-                    pronunciation.replace(
-                        /'/g,
-                        "\\'"
-                    ) +
+                    safePronunciation +
                     "')\">" +
 
                     "🔊 Listen" +
 
-                    "</button>"
+                    "</button>";
 
+
+                addMessage(
+                    "bot",
+                    reply
                 );
+
+
+                chatHistory.push({
+
+                    type:
+                        "bot",
+
+                    text:
+                        reply
+
+                });
+
+
+                saveChat();
 
 
                 speakPronunciation(
@@ -2667,18 +2775,13 @@ function dictionaryPronunciation(word) {
             }
 
 
-            addMessage(
-
-                "bot",
+            saveDictionaryReply(
 
                 "Sorry, I don't have a pronunciation for <b>" +
                 escapeHTML(word) +
                 "</b> yet."
 
             );
-
-
-            finishProcessing();
 
         },
         300
@@ -2806,9 +2909,7 @@ function wordOfTheDay() {
                 data[0].phonetic || "";
 
 
-            addMessage(
-
-                "bot",
+            const reply =
 
                 "🌟 <b>Word of the Day</b><br><br>" +
 
@@ -2838,12 +2939,12 @@ function wordOfTheDay() {
                 "✏️ <b>Example:</b> " +
                 escapeHTML(
                     example
-                )
+                );
 
+
+            saveDictionaryReply(
+                reply
             );
-
-
-            finishProcessing();
 
         }
     )
@@ -2854,16 +2955,11 @@ function wordOfTheDay() {
             removeTyping();
 
 
-            addMessage(
-
-                "bot",
+            saveDictionaryReply(
 
                 "Sorry, I couldn't get the Word of the Day."
 
             );
-
-
-            finishProcessing();
 
         }
     );
@@ -2891,7 +2987,7 @@ function clearChat() {
     }
 
 
-    // Clear ONLY the current chat.
+    // Clear ONLY the current visible chat.
     chatHistory = [];
 
 
@@ -2907,8 +3003,15 @@ function clearChat() {
 
 
     // IMPORTANT:
-    // Do NOT call saveChat() here.
-    // saveChat() also updates History.
+    // Do NOT remove or modify History here.
+    // History remains untouched.
+
+
+    selectedAttachments = [];
+
+    displayAttachments();
+
+    removeTyping();
 
     finishProcessing();
 
@@ -2934,31 +3037,29 @@ function clearHistory() {
     }
 
 
-    // Remove saved History.
+    // =================================================
+    // IMPORTANT:
+    // Clear ONLY History.
+    // Do NOT clear the current chat.
+    // =================================================
+
     localStorage.removeItem(
         getHistoryStorageKey()
     );
 
 
-    // Also clear current chat.
-    localStorage.removeItem(
-        getChatStorageKey()
-    );
-
-
-    chatHistory = [];
-
-
-    const chatBox =
+    // Close the history panel if it is open.
+    const overlay =
         document.getElementById(
-            "chat-box"
+            "history-overlay"
         );
 
 
-    if (chatBox) {
+    if (overlay) {
 
-        chatBox.innerHTML =
-            "";
+        overlay.classList.remove(
+            "show"
+        );
 
     }
 
@@ -2991,8 +3092,6 @@ function showHistory() {
     // =================================================
     // OLD STORAGE MIGRATION
     // =================================================
-    // If History was created by the old version,
-    // use the old chat storage once.
 
     if (
         history.length === 0
@@ -3301,7 +3400,6 @@ function checkEnter(event) {
         event.preventDefault();
 
 
-        // Processing lock also protects Enter.
         if (isProcessing) {
 
             return;
@@ -3335,7 +3433,6 @@ function startListening() {
     }
 
 
-    // Don't start another voice message while processing.
     if (isProcessing) {
 
         return;
@@ -3520,7 +3617,7 @@ function stripHTML(text) {
 
 function cleanWord(word) {
 
-    return word
+    return String(word)
         .replace(
             /[.,!?;:]/g,
             ""
@@ -3532,7 +3629,6 @@ function cleanWord(word) {
 
 // =====================================================
 // WELCOME SCREEN
-// SMOOTH CHAT INTERFACE OPENING
 // =====================================================
 
 function startThirdEye() {
@@ -3614,7 +3710,6 @@ function toggleAttachmentMenu() {
 
 function selectImages() {
 
-    // Don't choose another attachment while processing.
     if (isProcessing) {
 
         return;
@@ -3642,7 +3737,6 @@ function selectImages() {
 
 function selectFiles() {
 
-    // Don't choose another attachment while processing.
     if (isProcessing) {
 
         return;
@@ -3871,7 +3965,6 @@ function displayAttachments() {
 
 function removeAttachment(index) {
 
-    // Don't change attachments during processing.
     if (isProcessing) {
 
         return;
@@ -4821,7 +4914,6 @@ window.addEventListener(
 
         // =============================================
         // LOGIN BUTTON
-        // THIS FIXES YOUR LOGIN BUTTON
         // =============================================
 
         const loginButton =
