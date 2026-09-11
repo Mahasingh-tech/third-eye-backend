@@ -14,9 +14,7 @@ function getChatStorageKey() {
         localStorage.getItem("thirdEyeUser");
 
     if (!userData) {
-
         return "thirdEyeChat_guest";
-
     }
 
     try {
@@ -25,9 +23,7 @@ function getChatStorageKey() {
             JSON.parse(userData);
 
         if (user && user.id) {
-
             return "thirdEyeChat_" + user.id;
-
         }
 
         return "thirdEyeChat_guest";
@@ -35,9 +31,7 @@ function getChatStorageKey() {
     }
 
     catch (error) {
-
         return "thirdEyeChat_guest";
-
     }
 
 }
@@ -84,7 +78,6 @@ let chatHistory =
         )
     ) || [];
 
-
 let selectedAttachments = [];
 
 let thinkingInterval = null;
@@ -102,22 +95,15 @@ function setProcessingState(processing) {
     isProcessing = processing;
 
     const sendButton =
-        document.getElementById(
-            "sendBtn"
-        );
-
+        document.getElementById("sendBtn");
 
     if (sendButton) {
 
         sendButton.disabled =
             processing;
 
-
         sendButton.style.opacity =
-            processing
-                ? "0.5"
-                : "1";
-
+            processing ? "0.5" : "1";
 
         sendButton.style.cursor =
             processing
@@ -143,16 +129,10 @@ function finishProcessing() {
 async function requestNotificationPermission() {
 
     if (!("Notification" in window)) {
-
         return;
-
     }
 
-
-    if (
-        Notification.permission ===
-        "default"
-    ) {
+    if (Notification.permission === "default") {
 
         try {
 
@@ -177,46 +157,27 @@ async function requestNotificationPermission() {
 function notifyThirdEyeAnswered() {
 
     if (!("Notification" in window)) {
-
         return;
-
     }
 
-
-    if (
-        Notification.permission !==
-        "granted"
-    ) {
-
+    if (Notification.permission !== "granted") {
         return;
-
     }
-
-
-    // Notify only when the user is away
-    // from the Third Eye tab.
 
     if (!document.hidden) {
-
         return;
-
     }
-
 
     const notification =
         new Notification(
             "Third Eye has answered",
             {
-
                 body:
                     "Your answer is ready. 🔔",
-
                 icon:
                     "images/s2.jpeg"
-
             }
         );
-
 
     notification.onclick =
         function () {
@@ -237,13 +198,9 @@ function notifyThirdEyeAnswered() {
 const textThinkingMessages = [
 
     "🤔 Thinking...",
-
     "🧠 Processing your question...",
-
     "🔍 Finding the best answer...",
-
     "✨ Preparing your answer...",
-
     "🤖 Almost there..."
 
 ];
@@ -252,17 +209,11 @@ const textThinkingMessages = [
 const imageThinkingMessages = [
 
     "👁️ Analyzing image...",
-
     "🔍 Examining visual details...",
-
     "🧠 Understanding the image...",
-
     "🔎 Looking at the important details...",
-
     "✨ Putting everything together...",
-
     "🤖 Preparing the answer...",
-
     "👁️ Almost there..."
 
 ];
@@ -271,13 +222,9 @@ const imageThinkingMessages = [
 const fileThinkingMessages = [
 
     "📄 Reading file...",
-
     "🔍 Examining the document...",
-
     "🧠 Understanding the contents...",
-
     "✨ Preparing the answer...",
-
     "🤖 Almost there..."
 
 ];
@@ -301,11 +248,8 @@ function addMessage(type, text) {
         document.getElementById("chat-box");
 
     if (!chatBox) {
-
         return null;
-
     }
-
 
     const wrapper =
         document.createElement("div");
@@ -313,10 +257,8 @@ function addMessage(type, text) {
     wrapper.style.marginTop =
         "10px";
 
-
     const label =
         document.createElement("small");
-
 
     if (type === "user") {
 
@@ -332,18 +274,14 @@ function addMessage(type, text) {
 
     }
 
-
     const bubble =
         document.createElement("div");
-
 
     bubble.className =
         "message " + type;
 
-
     bubble.innerHTML =
         text;
-
 
     wrapper.appendChild(label);
 
@@ -351,10 +289,8 @@ function addMessage(type, text) {
 
     chatBox.appendChild(wrapper);
 
-
     chatBox.scrollTop =
         chatBox.scrollHeight;
-
 
     return bubble;
 
@@ -368,78 +304,48 @@ function addMessage(type, text) {
 function showTyping(type = "text") {
 
     const chatBox =
-        document.getElementById(
-            "chat-box"
-        );
-
+        document.getElementById("chat-box");
 
     if (!chatBox) {
-
         return;
-
     }
-
 
     if (
-        document.getElementById(
-            "typing"
-        )
+        document.getElementById("typing")
     ) {
-
         return;
-
     }
-
 
     let messages;
 
-
     if (type === "image") {
-
-        messages =
-            imageThinkingMessages;
-
+        messages = imageThinkingMessages;
     }
 
     else if (type === "file") {
-
-        messages =
-            fileThinkingMessages;
-
+        messages = fileThinkingMessages;
     }
 
     else {
-
-        messages =
-            textThinkingMessages;
-
+        messages = textThinkingMessages;
     }
-
 
     const typing =
         document.createElement("p");
 
-
     typing.id =
         "typing";
-
 
     typing.innerHTML =
         "<b>🤖 Third Eye:</b> " +
         messages[0];
 
-
-    chatBox.appendChild(
-        typing
-    );
-
+    chatBox.appendChild(typing);
 
     chatBox.scrollTop =
         chatBox.scrollHeight;
 
-
     let messageIndex = 0;
-
 
     thinkingInterval =
         setInterval(
@@ -447,31 +353,23 @@ function showTyping(type = "text") {
 
                 messageIndex++;
 
-
                 if (
                     messageIndex >=
                     messages.length
                 ) {
-
                     messageIndex = 0;
-
                 }
-
 
                 const currentTyping =
                     document.getElementById(
                         "typing"
                     );
 
-
                 if (currentTyping) {
 
                     currentTyping.innerHTML =
                         "<b>🤖 Third Eye:</b> " +
-                        messages[
-                            messageIndex
-                        ];
-
+                        messages[messageIndex];
 
                     chatBox.scrollTop =
                         chatBox.scrollHeight;
@@ -492,17 +390,11 @@ function showTyping(type = "text") {
 function removeTyping() {
 
     const typing =
-        document.getElementById(
-            "typing"
-        );
-
+        document.getElementById("typing");
 
     if (typing) {
-
         typing.remove();
-
     }
-
 
     if (thinkingInterval) {
 
@@ -532,26 +424,15 @@ function saveChat() {
     const clearedKey =
         getHistoryClearedKey();
 
-
-    // Save current chat.
     localStorage.setItem(
         chatKey,
-        JSON.stringify(
-            chatHistory
-        )
+        JSON.stringify(chatHistory)
     );
-
-
-    // -------------------------------------------------
-    // If History was cleared, start History again
-    // with the current conversation.
-    // -------------------------------------------------
 
     const historyWasCleared =
         localStorage.getItem(
             clearedKey
         ) === "true";
-
 
     if (historyWasCleared) {
 
@@ -561,46 +442,10 @@ function saveChat() {
 
     }
 
-
-    // Save a separate copy for History.
     localStorage.setItem(
         historyKey,
-        JSON.stringify(
-            chatHistory
-        )
+        JSON.stringify(chatHistory)
     );
-
-}
-
-
-// =====================================================
-// SAVE DICTIONARY REPLY
-// =====================================================
-
-function saveDictionaryReply(reply) {
-
-    addMessage(
-        "bot",
-        reply
-    );
-
-
-    chatHistory.push({
-
-        type:
-            "bot",
-
-        text:
-            reply
-
-    });
-
-
-    saveChat();
-
-    notifyThirdEyeAnswered();
-
-    finishProcessing();
 
 }
 
@@ -613,7 +458,6 @@ function rememberName(name) {
 
     userName =
         name;
-
 
     localStorage.setItem(
         "thirdeyeName",
@@ -640,51 +484,32 @@ function loadName() {
 function sendMessage() {
 
     if (isProcessing) {
-
         return;
-
     }
-
 
     const input =
-        document.getElementById(
-            "message"
-        );
-
+        document.getElementById("message");
 
     if (!input) {
-
         return;
-
     }
-
 
     const usermessage =
         input.value.trim();
-
 
     if (
         usermessage === "" &&
         selectedAttachments.length === 0
     ) {
-
         return;
-
     }
-
 
     setProcessingState(true);
 
-
-    // Ask for browser notification permission
-    // from the user's send action.
-
     requestNotificationPermission();
-
 
     const msg =
         usermessage.toLowerCase();
-
 
     let displayedMessage =
         usermessage;
@@ -703,21 +528,16 @@ function sendMessage() {
                 .map(
                     file =>
                         "📎 " +
-                        escapeHTML(
-                            file.name
-                        )
+                        escapeHTML(file.name)
                 )
                 .join("<br>");
-
 
         if (usermessage) {
 
             displayedMessage =
                 attachmentNames +
                 "<br>" +
-                escapeHTML(
-                    usermessage
-                );
+                escapeHTML(usermessage);
 
         }
 
@@ -733,9 +553,7 @@ function sendMessage() {
     else {
 
         displayedMessage =
-            escapeHTML(
-                usermessage
-            );
+            escapeHTML(usermessage);
 
     }
 
@@ -749,7 +567,6 @@ function sendMessage() {
         displayedMessage
     );
 
-
     chatHistory.push({
 
         type:
@@ -760,9 +577,7 @@ function sendMessage() {
 
     });
 
-
     saveChat();
-
 
     input.value = "";
 
@@ -797,16 +612,13 @@ function sendMessage() {
                 .substring(11)
                 .trim();
 
-
         rememberName(name);
-
 
         sendBuiltInReply(
             "Nice to meet you, " +
             escapeHTML(name) +
             "!"
         );
-
 
         return;
 
@@ -856,17 +668,12 @@ function sendMessage() {
         const greetings = [
 
             "Hello! 👋",
-
             "Hi there!",
-
             "Hey! How are you?",
-
             "Greetings!",
-
             "Hello! I'm Third Eye, your AI assistant."
 
         ];
-
 
         const reply =
             greetings[
@@ -875,7 +682,6 @@ function sendMessage() {
                     greetings.length
                 )
             ];
-
 
         sendBuiltInReply(reply);
 
@@ -956,7 +762,7 @@ function sendMessage() {
             "calculate numbers, tell jokes and facts, " +
             "help with words, use voice input, read " +
             "PDF, TXT and DOCX files, and answer " +
-            "questions using my local Llama AI model."
+            "questions using my AI model."
 
         );
 
@@ -1013,7 +819,6 @@ function sendMessage() {
         const now =
             new Date();
 
-
         sendBuiltInReply(
             "The time is " +
             now.toLocaleTimeString()
@@ -1036,7 +841,6 @@ function sendMessage() {
 
         const today =
             new Date();
-
 
         sendBuiltInReply(
 
@@ -1076,7 +880,6 @@ function sendMessage() {
                     ')'
                 )();
 
-
             sendBuiltInReply(
                 "The answer is " +
                 answer
@@ -1111,7 +914,6 @@ function sendMessage() {
                 Math.random() * 6
             ) + 1;
 
-
         sendBuiltInReply(
             "🎲 You rolled a " +
             dice +
@@ -1136,7 +938,6 @@ function sendMessage() {
             Math.random() < 0.5
                 ? "Heads"
                 : "Tails";
-
 
         sendBuiltInReply(
             "🪙 " +
@@ -1171,7 +972,6 @@ function sendMessage() {
             "I told my computer I needed a break. It said: No problem, I'll go to sleep!"
 
         ];
-
 
         sendBuiltInReply(
 
@@ -1212,7 +1012,6 @@ function sendMessage() {
 
         ];
 
-
         sendBuiltInReply(
 
             "🌍 " +
@@ -1245,7 +1044,6 @@ function sendMessage() {
                 Math.random() * 100
             ) + 1;
 
-
         sendBuiltInReply(
 
             "🎲 Your random number is " +
@@ -1274,7 +1072,6 @@ function sendMessage() {
 
         let numbers;
 
-
         if (
             msg.startsWith(
                 "random number between "
@@ -1293,10 +1090,8 @@ function sendMessage() {
 
         }
 
-
         const parts =
             numbers.split("and");
-
 
         if (
             parts.length === 2
@@ -1307,12 +1102,10 @@ function sendMessage() {
                     parts[0].trim()
                 );
 
-
             const max =
                 parseInt(
                     parts[1].trim()
                 );
-
 
             if (
                 !isNaN(min) &&
@@ -1325,7 +1118,6 @@ function sendMessage() {
                         Math.random() *
                         (max - min + 1)
                     ) + min;
-
 
                 sendBuiltInReply(
 
@@ -1379,327 +1171,12 @@ function sendMessage() {
 
 
     // =================================================
-    // DEFINITION
+    // ALL OTHER QUESTIONS → AI
     // =================================================
-
-    if (
-        msg.startsWith("define ") ||
-        msg.startsWith("meaning of ") ||
-        msg.startsWith("what does ")
-    ) {
-
-        let word = "";
-
-
-        if (
-            msg.startsWith("define ")
-        ) {
-
-            word =
-                msg.substring(
-                    "define ".length
-                );
-
-        }
-
-        else if (
-            msg.startsWith("meaning of ")
-        ) {
-
-            word =
-                msg.substring(
-                    "meaning of ".length
-                );
-
-        }
-
-        else {
-
-            word =
-                msg.substring(
-                    "what does ".length
-                )
-                .replace(
-                    /\s+(mean|means)$/i,
-                    ""
-                );
-
-        }
-
-
-        word =
-            cleanWord(word);
-
-
-        dictionaryDefinition(word);
-
-        return;
-
-    }
-
-
-    // =================================================
-    // SYNONYMS
-    // =================================================
-
-    if (
-        msg.startsWith("synonym of ") ||
-        msg.startsWith("synonyms of ") ||
-        msg.startsWith("give me synonyms of ")
-    ) {
-
-        let word = "";
-
-
-        if (
-            msg.startsWith("synonym of ")
-        ) {
-
-            word =
-                msg.substring(
-                    "synonym of ".length
-                );
-
-        }
-
-        else if (
-            msg.startsWith("synonyms of ")
-        ) {
-
-            word =
-                msg.substring(
-                    "synonyms of ".length
-                );
-
-        }
-
-        else {
-
-            word =
-                msg.substring(
-                    "give me synonyms of ".length
-                );
-
-        }
-
-
-        word =
-            cleanWord(word);
-
-
-        dictionarySynonyms(word);
-
-        return;
-
-    }
-
-
-    // =================================================
-    // ANTONYMS
-    // =================================================
-
-    if (
-        msg.startsWith("antonym of ") ||
-        msg.startsWith("antonyms of ") ||
-        msg.startsWith("opposite of ") ||
-        msg.startsWith("give me antonyms of ")
-    ) {
-
-        let word = "";
-
-
-        if (
-            msg.startsWith("antonym of ")
-        ) {
-
-            word =
-                msg.substring(
-                    "antonym of ".length
-                );
-
-        }
-
-        else if (
-            msg.startsWith("antonyms of ")
-        ) {
-
-            word =
-                msg.substring(
-                    "antonyms of ".length
-                );
-
-        }
-
-        else if (
-            msg.startsWith("opposite of ")
-        ) {
-
-            word =
-                msg.substring(
-                    "opposite of ".length
-                );
-
-        }
-
-        else {
-
-            word =
-                msg.substring(
-                    "give me antonyms of ".length
-                );
-
-        }
-
-
-        word =
-            cleanWord(word);
-
-
-        dictionaryAntonyms(word);
-
-        return;
-
-    }
-
-
-    // =================================================
-    // EXAMPLES
-    // =================================================
-
-    if (
-        msg.startsWith("example of ") ||
-        (
-            msg.startsWith("use ") &&
-            msg.includes(" in a sentence")
-        ) ||
-        msg.startsWith("sentence with ")
-    ) {
-
-        let word = "";
-
-
-        if (
-            msg.startsWith("example of ")
-        ) {
-
-            word =
-                msg.substring(
-                    "example of ".length
-                );
-
-        }
-
-        else if (
-            msg.startsWith("use ")
-        ) {
-
-            word =
-                msg.substring(
-                    "use ".length
-                )
-                .replace(
-                    " in a sentence",
-                    ""
-                );
-
-        }
-
-        else {
-
-            word =
-                msg.substring(
-                    "sentence with ".length
-                );
-
-        }
-
-
-        word =
-            cleanWord(word);
-
-
-        dictionaryExamples(word);
-
-        return;
-
-    }
-
-
-    // =================================================
-    // PRONUNCIATION
-    // =================================================
-
-    if (
-        msg.startsWith("pronounce ") ||
-        msg.startsWith("pronunciation of ") ||
-        msg.startsWith("how do you pronounce ")
-    ) {
-
-        let word = "";
-
-
-        if (
-            msg.startsWith("pronounce ")
-        ) {
-
-            word =
-                msg.substring(
-                    "pronounce ".length
-                );
-
-        }
-
-        else if (
-            msg.startsWith("pronunciation of ")
-        ) {
-
-            word =
-                msg.substring(
-                    "pronunciation of ".length
-                );
-
-        }
-
-        else {
-
-            word =
-                msg.substring(
-                    "how do you pronounce ".length
-                );
-
-        }
-
-
-        word =
-            cleanWord(word);
-
-
-        dictionaryPronunciation(word);
-
-        return;
-
-    }
-
-
-    // =================================================
-    // WORD OF THE DAY
-    // =================================================
-
-    if (
-        msg === "word of the day" ||
-        msg === "give me a word of the day" ||
-        msg === "what is the word of the day"
-    ) {
-
-        wordOfTheDay();
-
-        return;
-
-    }
-
-
-    // =================================================
-    // LOCAL AI
+    // IMPORTANT:
+    // Definitions, meanings, synonyms, antonyms,
+    // examples, pronunciation and word-of-the-day
+    // questions are now handled by the AI.
     // =================================================
 
     askAI(
@@ -1717,18 +1194,15 @@ function sendBuiltInReply(reply) {
 
     showTyping("text");
 
-
     setTimeout(
         function () {
 
             removeTyping();
 
-
             addMessage(
                 "bot",
                 reply
             );
-
 
             chatHistory.push({
 
@@ -1740,11 +1214,9 @@ function sendBuiltInReply(reply) {
 
             });
 
-
             saveChat();
 
             notifyThirdEyeAnswered();
-
 
             finishProcessing();
 
@@ -1756,18 +1228,16 @@ function sendBuiltInReply(reply) {
 
 
 // =====================================================
-// LOCAL AI
+// AI
 // =====================================================
 
 async function askAI(usermessage) {
 
     showTyping("text");
 
-
     try {
 
         let attachmentText = "";
-
 
         for (
             const file of selectedAttachments
@@ -1783,7 +1253,6 @@ async function askAI(usermessage) {
                 const text =
                     await file.text();
 
-
                 attachmentText +=
                     "\n\n===== FILE: " +
                     file.name +
@@ -1796,18 +1265,32 @@ async function askAI(usermessage) {
 
 
         // =================================================
-        // IMPORTANT AI INSTRUCTION
-        // Prevent repeated greetings for normal questions.
+        // AI INSTRUCTION
         // =================================================
 
         let finalMessage =
+
             "IMPORTANT: Answer the user's question directly. " +
+
             "Do NOT greet the user, introduce yourself, say " +
             "'Hey there', say 'I'm your AI assistant', or " +
             "repeat a welcome message unless the user's actual " +
-            "message is a greeting. If the user asks a normal " +
-            "question, give only the relevant answer.\n\n" +
-            "User's question:\n" +
+            "message is a greeting. " +
+
+            "Answer definitions, meanings, synonyms, antonyms, " +
+            "examples, pronunciation questions, word meanings, " +
+            "and word-of-the-day requests normally and accurately. " +
+
+            "If the user asks for pronunciation, provide an easy " +
+            "English pronunciation and, when useful, IPA. " +
+
+            "If the user asks for a definition, give a clear " +
+            "definition and a simple example when appropriate. " +
+
+            "If the user asks for synonyms or antonyms, provide " +
+            "useful examples. " +
+
+            "\n\nUser's question:\n" +
             usermessage;
 
 
@@ -1887,9 +1370,7 @@ async function askAI(usermessage) {
 
 
             if (result.done) {
-
                 break;
-
             }
 
 
@@ -1960,7 +1441,7 @@ async function askAI(usermessage) {
 
         addMessage(
             "bot",
-            "❌ I couldn't connect to the Third Eye AI server. Make sure Node.js and Ollama are running."
+            "❌ I couldn't connect to the Third Eye AI server. Please try again."
         );
 
     }
@@ -2013,15 +1494,11 @@ async function askAIWithFile(usermessage) {
 
 
     if (isImage) {
-
         showTyping("image");
-
     }
 
     else {
-
         showTyping("file");
-
     }
 
 
@@ -2069,12 +1546,10 @@ async function askAIWithFile(usermessage) {
 
             removeTyping();
 
-
             addMessage(
                 "bot",
                 "❌ This file type isn't supported yet. Please attach a PDF, TXT, DOCX, JPEG, JPG, PNG or WEBP file."
             );
-
 
             selectedAttachments = [];
 
@@ -2124,7 +1599,6 @@ async function askAIWithFile(usermessage) {
             const errorText =
                 await response.text();
 
-
             throw new Error(
                 errorText ||
                 "File processing failed."
@@ -2161,9 +1635,7 @@ async function askAIWithFile(usermessage) {
 
 
             if (result.done) {
-
                 break;
-
             }
 
 
@@ -2256,874 +1728,6 @@ async function askAIWithFile(usermessage) {
 
 
 // =====================================================
-// DICTIONARY DEFINITION
-// =====================================================
-
-function dictionaryDefinition(word) {
-
-    if (!word) {
-
-        addMessage(
-            "bot",
-            "Please provide a word. Example: <b>define happy</b>"
-        );
-
-        finishProcessing();
-
-        return;
-
-    }
-
-
-    showTyping("text");
-
-
-    fetch(
-        "https://api.dictionaryapi.dev/api/v2/entries/en/" +
-        encodeURIComponent(word)
-    )
-
-    .then(
-        response => {
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "Word not found"
-                );
-
-            }
-
-
-            return response.json();
-
-        }
-    )
-
-    .then(
-        data => {
-
-            removeTyping();
-
-
-            const meaning =
-                data[0].meanings[0];
-
-
-            const definition =
-                meaning
-                    .definitions[0]
-                    .definition;
-
-
-            const partOfSpeech =
-                meaning.partOfSpeech || "";
-
-
-            const reply =
-
-                "<b>📖 " +
-                escapeHTML(word) +
-                "</b><br>" +
-
-                (
-                    partOfSpeech
-                        ? "<i>" +
-                          escapeHTML(
-                              partOfSpeech
-                          ) +
-                          "</i><br>"
-                        : ""
-                ) +
-
-                escapeHTML(
-                    definition
-                );
-
-
-            saveDictionaryReply(
-                reply
-            );
-
-        }
-    )
-
-    .catch(
-        function () {
-
-            removeTyping();
-
-
-            saveDictionaryReply(
-
-                "Sorry, I couldn't find a definition for <b>" +
-                escapeHTML(word) +
-                "</b>."
-
-            );
-
-        }
-    );
-
-}
-
-
-// =====================================================
-// SYNONYMS
-// =====================================================
-
-function dictionarySynonyms(word) {
-
-    if (!word) {
-
-        addMessage(
-            "bot",
-            "Please provide a word. Example: <b>synonym of happy</b>"
-        );
-
-        finishProcessing();
-
-        return;
-
-    }
-
-
-    showTyping("text");
-
-
-    fetch(
-        "https://api.dictionaryapi.dev/api/v2/entries/en/" +
-        encodeURIComponent(word)
-    )
-
-    .then(
-        response => {
-
-            if (!response.ok) {
-
-                throw new Error();
-
-            }
-
-            return response.json();
-
-        }
-    )
-
-    .then(
-        data => {
-
-            removeTyping();
-
-
-            let synonyms = [];
-
-
-            data[0].meanings.forEach(
-                meaning => {
-
-                    if (
-                        meaning.synonyms
-                    ) {
-
-                        synonyms =
-                            synonyms.concat(
-                                meaning.synonyms
-                            );
-
-                    }
-
-
-                    meaning.definitions.forEach(
-                        definition => {
-
-                            if (
-                                definition.synonyms
-                            ) {
-
-                                synonyms =
-                                    synonyms.concat(
-                                        definition.synonyms
-                                    );
-
-                            }
-
-                        }
-                    );
-
-                }
-            );
-
-
-            synonyms =
-                [
-                    ...new Set(
-                        synonyms
-                    )
-                ];
-
-
-            const text =
-                synonyms.length
-
-                    ? synonyms
-                        .slice(0, 10)
-                        .join(", ")
-
-                    : "No synonyms found.";
-
-
-            const reply =
-
-                "<b>Synonyms of " +
-                escapeHTML(word) +
-                ":</b><br>" +
-                escapeHTML(text);
-
-
-            saveDictionaryReply(
-                reply
-            );
-
-        }
-    )
-
-    .catch(
-        function () {
-
-            removeTyping();
-
-
-            saveDictionaryReply(
-
-                "Sorry, I couldn't find synonyms for <b>" +
-                escapeHTML(word) +
-                "</b>."
-
-            );
-
-        }
-    );
-
-}
-
-
-// =====================================================
-// ANTONYMS
-// =====================================================
-
-function dictionaryAntonyms(word) {
-
-    if (!word) {
-
-        addMessage(
-            "bot",
-            "Please provide a word. Example: <b>antonym of happy</b>"
-        );
-
-        finishProcessing();
-
-        return;
-
-    }
-
-
-    showTyping("text");
-
-
-    fetch(
-        "https://api.dictionaryapi.dev/api/v2/entries/en/" +
-        encodeURIComponent(word)
-    )
-
-    .then(
-        response => {
-
-            if (!response.ok) {
-
-                throw new Error();
-
-            }
-
-            return response.json();
-
-        }
-    )
-
-    .then(
-        data => {
-
-            removeTyping();
-
-
-            let antonyms = [];
-
-
-            data[0].meanings.forEach(
-                meaning => {
-
-                    if (
-                        meaning.antonyms
-                    ) {
-
-                        antonyms =
-                            antonyms.concat(
-                                meaning.antonyms
-                            );
-
-                    }
-
-
-                    meaning.definitions.forEach(
-                        definition => {
-
-                            if (
-                                definition.antonyms
-                            ) {
-
-                                antonyms =
-                                    antonyms.concat(
-                                        definition.antonyms
-                                    );
-
-                            }
-
-                        }
-                    );
-
-                }
-            );
-
-
-            antonyms =
-                [
-                    ...new Set(
-                        antonyms
-                    )
-                ];
-
-
-            const text =
-                antonyms.length
-
-                    ? antonyms
-                        .slice(0, 10)
-                        .join(", ")
-
-                    : "No antonyms found.";
-
-
-            const reply =
-
-                "<b>Antonyms of " +
-                escapeHTML(word) +
-                ":</b><br>" +
-                escapeHTML(text);
-
-
-            saveDictionaryReply(
-                reply
-            );
-
-        }
-    )
-
-    .catch(
-        function () {
-
-            removeTyping();
-
-
-            saveDictionaryReply(
-
-                "Sorry, I couldn't find antonyms for <b>" +
-                escapeHTML(word) +
-                "</b>."
-
-            );
-
-        }
-    );
-
-}
-
-
-// =====================================================
-// EXAMPLES
-// =====================================================
-
-function dictionaryExamples(word) {
-
-    if (!word) {
-
-        addMessage(
-            "bot",
-            "Please provide a word. Example: <b>example of happy</b>"
-        );
-
-        finishProcessing();
-
-        return;
-
-    }
-
-
-    showTyping("text");
-
-
-    fetch(
-        "https://api.dictionaryapi.dev/api/v2/entries/en/" +
-        encodeURIComponent(word)
-    )
-
-    .then(
-        response => {
-
-            if (!response.ok) {
-
-                throw new Error();
-
-            }
-
-            return response.json();
-
-        }
-    )
-
-    .then(
-        data => {
-
-            removeTyping();
-
-
-            let examples = [];
-
-
-            data[0].meanings.forEach(
-                meaning => {
-
-                    meaning.definitions.forEach(
-                        definition => {
-
-                            if (
-                                definition.example
-                            ) {
-
-                                examples.push(
-                                    definition.example
-                                );
-
-                            }
-
-                        }
-                    );
-
-                }
-            );
-
-
-            examples =
-                [
-                    ...new Set(
-                        examples
-                    )
-                ];
-
-
-            if (
-                examples.length === 0
-            ) {
-
-                saveDictionaryReply(
-
-                    "I couldn't find an example sentence for <b>" +
-                    escapeHTML(word) +
-                    "</b>."
-
-                );
-
-                return;
-
-            }
-
-
-            const text =
-                examples
-                    .slice(0, 5)
-                    .map(
-                        example =>
-                            "• " +
-                            escapeHTML(example)
-                    )
-                    .join("<br>");
-
-
-            const reply =
-
-                "<b>Examples of " +
-                escapeHTML(word) +
-                ":</b><br><br>" +
-                text;
-
-
-            saveDictionaryReply(
-                reply
-            );
-
-        }
-    )
-
-    .catch(
-        function () {
-
-            removeTyping();
-
-
-            saveDictionaryReply(
-
-                "Sorry, I couldn't find an example for <b>" +
-                escapeHTML(word) +
-                "</b>."
-
-            );
-
-        }
-    );
-
-}
-
-
-// =====================================================
-// PRONUNCIATION
-// =====================================================
-
-function dictionaryPronunciation(word) {
-
-    if (!word) {
-
-        addMessage(
-            "bot",
-            "Please provide a word. Example: <b>pronounce curious</b>"
-        );
-
-        finishProcessing();
-
-        return;
-
-    }
-
-
-    showTyping("text");
-
-
-    const pronunciationMap = {
-
-        "curious":
-            "Kyoo-ree-us",
-
-        "coincide":
-            "kohn-syd",
-
-        "brilliant":
-            "Bril-yunt",
-
-        "enormous":
-            "ih-nor-mus",
-
-        "fortunate":
-            "For-chuh-nut",
-
-        "generous":
-            "Jen-er-us",
-
-        "magnificent":
-            "mag-nif-uh-sunt",
-
-        "persistent":
-            "per-sis-tunt",
-
-        "vivid":
-            "Viv-id",
-
-        "courageous":
-            "kuh-ray-jus"
-
-    };
-
-
-    const lowerWord =
-        word.toLowerCase();
-
-
-    setTimeout(
-        function () {
-
-            removeTyping();
-
-
-            if (
-                pronunciationMap[lowerWord]
-            ) {
-
-                const pronunciation =
-                    pronunciationMap[
-                        lowerWord
-                    ];
-
-
-                const safePronunciation =
-                    pronunciation.replace(
-                        /'/g,
-                        "\\'"
-                    );
-
-
-                const reply =
-
-                    "<b>🔊 Pronunciation of " +
-                    escapeHTML(word) +
-                    ":</b><br><br>" +
-
-                    "<strong style='font-size:22px;'>" +
-                    escapeHTML(pronunciation) +
-                    "</strong><br><br>" +
-
-                    "<button onclick=\"speakPronunciation('" +
-                    safePronunciation +
-                    "')\">" +
-
-                    "🔊 Listen" +
-
-                    "</button>";
-
-
-                addMessage(
-                    "bot",
-                    reply
-                );
-
-
-                chatHistory.push({
-
-                    type:
-                        "bot",
-
-                    text:
-                        reply
-
-                });
-
-
-                saveChat();
-
-                notifyThirdEyeAnswered();
-
-
-                speakPronunciation(
-                    pronunciation
-                );
-
-
-                finishProcessing();
-
-                return;
-
-            }
-
-
-            saveDictionaryReply(
-
-                "Sorry, I don't have a pronunciation for <b>" +
-                escapeHTML(word) +
-                "</b> yet."
-
-            );
-
-        },
-        300
-    );
-
-}
-
-
-function speakPronunciation(text) {
-
-    if (
-        !("speechSynthesis" in window)
-    ) {
-
-        return;
-
-    }
-
-
-    speechSynthesis.cancel();
-
-
-    const speech =
-        new SpeechSynthesisUtterance(
-            text
-        );
-
-
-    speech.lang =
-        "en-US";
-
-
-    speech.rate =
-        0.75;
-
-
-    speech.pitch =
-        1;
-
-
-    speechSynthesis.speak(
-        speech
-    );
-
-}
-
-
-// =====================================================
-// WORD OF THE DAY
-// =====================================================
-
-function wordOfTheDay() {
-
-    const words = [
-
-        "coincide",
-        "curious",
-        "brilliant",
-        "enormous",
-        "fortunate",
-        "generous",
-        "magnificent",
-        "persistent",
-        "vivid",
-        "courageous"
-
-    ];
-
-
-    const word =
-        words[
-            Math.floor(
-                Math.random() *
-                words.length
-            )
-        ];
-
-
-    showTyping("text");
-
-
-    fetch(
-        "https://api.dictionaryapi.dev/api/v2/entries/en/" +
-        encodeURIComponent(word)
-    )
-
-    .then(
-        response => {
-
-            if (!response.ok) {
-
-                throw new Error();
-
-            }
-
-            return response.json();
-
-        }
-    )
-
-    .then(
-        data => {
-
-            removeTyping();
-
-
-            const meaning =
-                data[0].meanings[0];
-
-
-            const definition =
-                meaning
-                    .definitions[0]
-                    .definition;
-
-
-            const example =
-                meaning
-                    .definitions[0]
-                    .example ||
-                "No example sentence available.";
-
-
-            const phonetic =
-                data[0].phonetic || "";
-
-
-            const reply =
-
-                "🌟 <b>Word of the Day</b><br><br>" +
-
-                "📖 <b>" +
-                escapeHTML(word) +
-                "</b><br>" +
-
-                (
-                    phonetic
-
-                        ? "🔊 " +
-                          escapeHTML(
-                              phonetic
-                          ) +
-                          "<br>"
-
-                        : ""
-                ) +
-
-                "💡 <b>Meaning:</b> " +
-                escapeHTML(
-                    definition
-                ) +
-
-                "<br><br>" +
-
-                "✏️ <b>Example:</b> " +
-                escapeHTML(
-                    example
-                );
-
-
-            saveDictionaryReply(
-                reply
-            );
-
-        }
-    )
-
-    .catch(
-        function () {
-
-            removeTyping();
-
-
-            saveDictionaryReply(
-
-                "Sorry, I couldn't get the Word of the Day."
-
-            );
-
-        }
-    );
-
-}
-
-
-// =====================================================
 // CLEAR CHAT
 // =====================================================
 
@@ -3143,7 +1747,6 @@ function clearChat() {
     }
 
 
-    // Clear ONLY the current visible chat.
     chatHistory = [];
 
 
@@ -3151,16 +1754,9 @@ function clearChat() {
 
         getChatStorageKey(),
 
-        JSON.stringify(
-            []
-        )
+        JSON.stringify([])
 
     );
-
-
-    // IMPORTANT:
-    // Do NOT remove or modify History here.
-    // History remains untouched.
 
 
     selectedAttachments = [];
@@ -3187,9 +1783,7 @@ function clearHistory() {
 
 
     if (!confirmDelete) {
-
         return;
-
     }
 
 
@@ -3200,12 +1794,6 @@ function clearHistory() {
     const clearedKey =
         getHistoryClearedKey();
 
-
-    // =================================================
-    // IMPORTANT:
-    // Clear ONLY History.
-    // Do NOT clear the current chat.
-    // =================================================
 
     localStorage.setItem(
         historyKey,
@@ -3486,9 +2074,7 @@ function loadChatHistory() {
 
 
     if (!chatBox) {
-
         return;
-
     }
 
 
@@ -3575,9 +2161,7 @@ function checkEnter(event) {
 
 
         if (isProcessing) {
-
             return;
-
         }
 
 
@@ -3608,9 +2192,7 @@ function startListening() {
 
 
     if (isProcessing) {
-
         return;
-
     }
 
 
@@ -3789,18 +2371,6 @@ function stripHTML(text) {
 }
 
 
-function cleanWord(word) {
-
-    return String(word)
-        .replace(
-            /[.,!?;:]/g,
-            ""
-        )
-        .trim();
-
-}
-
-
 // =====================================================
 // WELCOME SCREEN
 // =====================================================
@@ -3869,9 +2439,7 @@ function toggleAttachmentMenu() {
 
 
     if (!menu) {
-
         return;
-
     }
 
 
@@ -3885,9 +2453,7 @@ function toggleAttachmentMenu() {
 function selectImages() {
 
     if (isProcessing) {
-
         return;
-
     }
 
 
@@ -3898,9 +2464,7 @@ function selectImages() {
 
 
     if (input) {
-
         input.click();
-
     }
 
 
@@ -3912,9 +2476,7 @@ function selectImages() {
 function selectFiles() {
 
     if (isProcessing) {
-
         return;
-
     }
 
 
@@ -3925,9 +2487,7 @@ function selectFiles() {
 
 
     if (input) {
-
         input.click();
-
     }
 
 
@@ -3977,9 +2537,7 @@ function handleImages(event) {
         );
 
 
-    addAttachments(
-        files
-    );
+    addAttachments(files);
 
 
     event.target.value =
@@ -4010,9 +2568,7 @@ function handleFiles(event) {
         );
 
 
-    addAttachments(
-        files
-    );
+    addAttachments(files);
 
 
     event.target.value =
@@ -4028,9 +2584,7 @@ function handleFiles(event) {
 function addAttachments(files) {
 
     if (isProcessing) {
-
         return;
-
     }
 
 
@@ -4063,9 +2617,7 @@ function displayAttachments() {
 
 
     if (!preview) {
-
         return;
-
     }
 
 
@@ -4140,9 +2692,7 @@ function displayAttachments() {
 function removeAttachment(index) {
 
     if (isProcessing) {
-
         return;
-
     }
 
 
@@ -4225,18 +2775,12 @@ function showLogin() {
 
 
     if (loginBox) {
-
-        loginBox.style.display =
-            "block";
-
+        loginBox.style.display = "block";
     }
 
 
     if (signupBox) {
-
-        signupBox.style.display =
-            "none";
-
+        signupBox.style.display = "none";
     }
 
 
@@ -4253,18 +2797,12 @@ function showLogin() {
 
 
     if (loginMessage) {
-
-        loginMessage.textContent =
-            "";
-
+        loginMessage.textContent = "";
     }
 
 
     if (signupMessage) {
-
-        signupMessage.textContent =
-            "";
-
+        signupMessage.textContent = "";
     }
 
 }
@@ -4289,18 +2827,12 @@ function showSignup() {
 
 
     if (loginBox) {
-
-        loginBox.style.display =
-            "none";
-
+        loginBox.style.display = "none";
     }
 
 
     if (signupBox) {
-
-        signupBox.style.display =
-            "block";
-
+        signupBox.style.display = "block";
     }
 
 
@@ -4317,18 +2849,12 @@ function showSignup() {
 
 
     if (loginMessage) {
-
-        loginMessage.textContent =
-            "";
-
+        loginMessage.textContent = "";
     }
 
 
     if (signupMessage) {
-
-        signupMessage.textContent =
-            "";
-
+        signupMessage.textContent = "";
     }
 
 }
@@ -4370,9 +2896,7 @@ async function signupUser() {
         !passwordInput ||
         !message
     ) {
-
         return;
-
     }
 
 
@@ -4838,9 +3362,7 @@ function logoutThirdEye() {
 
 
     if (!confirmed) {
-
         return;
-
     }
 
 
@@ -4872,9 +3394,7 @@ function toggleProfileMenu() {
 
 
     if (!menu) {
-
         return;
-
     }
 
 
@@ -4901,9 +3421,7 @@ function updateProfileInfo() {
 
 
     if (!userData) {
-
         return;
-
     }
 
 
@@ -5136,9 +3654,6 @@ window.addEventListener(
 
 
         if (chatBox) {
-
-            // Start with empty visible chat.
-            // History remains saved.
 
             chatBox.innerHTML =
                 "";
