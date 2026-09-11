@@ -2450,17 +2450,25 @@ function checkEnter(event) {
 
 
 // =====================================================
-// VOICE INPUT
+// VOICE INPUT — IMPROVED FOR IPAD / SAFARI
 // =====================================================
 
 function startListening() {
 
-    if (
-        !("webkitSpeechRecognition" in window)
-    ) {
+    if (isProcessing) {
+        return;
+    }
+
+
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+
+    if (!SpeechRecognition) {
 
         alert(
-            "Speech Recognition is not supported in this browser."
+            "Speech Recognition is not supported in this browser. Please use Safari or Chrome with microphone access enabled."
         );
 
         return;
@@ -2468,13 +2476,25 @@ function startListening() {
     }
 
 
-    if (isProcessing) {
+    const input =
+        document.getElementById(
+            "message"
+        );
+
+
+    const button =
+        document.getElementById(
+            "micBtn"
+        );
+
+
+    if (!input) {
         return;
     }
 
 
     const recognition =
-        new webkitSpeechRecognition();
+        new SpeechRecognition();
 
 
     recognition.lang =
@@ -2486,38 +2506,87 @@ function startListening() {
 
 
     recognition.interimResults =
-        false;
+        true;
 
+
+    recognition.maxAlternatives =
+        1;
+
+
+    // =================================================
+    // START
+    // =================================================
 
     recognition.onstart =
         function () {
-
-            const button =
-                document.getElementById(
-                    "micBtn"
-                );
-
 
             if (button) {
 
                 button.innerHTML =
                     "🎙️";
 
+                button.disabled =
+                    true;
+
             }
+
+
+            console.log(
+                "Third Eye microphone started."
+            );
 
         };
 
 
+    // =================================================
+    // RESULT
+    // =================================================
+
     recognition.onresult =
         function (event) {
 
-            let speech =
-                event.results[0][0]
-                    .transcript;
+            let finalText =
+                "";
+
+            let interimText =
+                "";
 
 
-            speech =
-                speech
+            for (
+                let i = event.resultIndex;
+                i < event.results.length;
+                i++
+            ) {
+
+                const transcript =
+                    event.results[i][0]
+                        .transcript;
+
+
+                if (
+                    event.results[i].isFinal
+                ) {
+
+                    finalText +=
+                        transcript;
+
+                }
+
+                else {
+
+                    interimText +=
+                        transcript;
+
+                }
+
+            }
+
+
+            const text =
+                (
+                    finalText ||
+                    interimText
+                )
                     .replace(
                         /[.,!?;:]/g,
                         ""
@@ -2525,56 +2594,153 @@ function startListening() {
                     .trim();
 
 
-            const input =
-                document.getElementById(
-                    "message"
-                );
-
-
-            if (input) {
+            if (text) {
 
                 input.value =
-                    speech;
+                    text;
 
             }
 
 
-            sendMessage();
+            // =========================================
+            // SEND ONLY FINAL SPEECH
+            // =========================================
+
+            if (
+                finalText.trim()
+            ) {
+
+                setTimeout(
+                    function () {
+
+                        sendMessage();
+
+                    },
+                    100
+                );
+
+            }
 
         };
 
+
+    // =================================================
+    // ERROR
+    // =================================================
 
     recognition.onerror =
         function (event) {
 
-            console.log(
-                "Speech recognition error:",
+            console.error(
+                "Third Eye speech recognition error:",
                 event.error
             );
+
+
+            if (
+                event.error ===
+                "not-allowed"
+            ) {
+
+                alert(
+                    "Microphone permission was denied. Please allow microphone access for Third Eye in Safari Settings."
+                );
+
+            }
+
+
+            else if (
+                event.error ===
+                "no-speech"
+            ) {
+
+                console.log(
+                    "No speech detected."
+                );
+
+            }
+
+
+            else if (
+                event.error ===
+                "network"
+            ) {
+
+                alert(
+                    "Speech recognition needs an internet connection. Please check your connection and try again."
+                );
+
+            }
+
+
+            else if (
+                event.error ===
+                "service-not-allowed"
+            ) {
+
+                alert(
+                    "Speech recognition is not available in this browser right now."
+                );
+
+            }
 
         };
 
 
+    // =================================================
+    // END
+    // =================================================
+
     recognition.onend =
         function () {
-
-            const button =
-                document.getElementById(
-                    "micBtn"
-                );
-
 
             if (button) {
 
                 button.innerHTML =
                     "🎤";
 
+                button.disabled =
+                    false;
+
             }
+
+
+            console.log(
+                "Third Eye microphone stopped."
+            );
 
         };
 
 
-    recognition.start();
+    // =================================================
+    // START RECOGNITION
+    // =================================================
+
+    try {
+
+        recognition.start();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Could not start microphone:",
+            error
+        );
+
+
+        if (button) {
+
+            button.innerHTML =
+                "🎤";
+
+            button.disabled =
+                false;
+
+        }
+
+    }
 
 }
 
