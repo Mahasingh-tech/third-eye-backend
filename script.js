@@ -1,3 +1,4 @@
+```javascript
 // =====================================================
 // THIRD EYE v1.0
 // Created by: Maha Singh
@@ -736,7 +737,18 @@ function sendMessage() {
         msg === "who developed you" ||
         msg === "who made u" ||
         msg === "who created u" ||
-        msg === "who developed u"
+        msg === "who developed u" ||
+        msg === "who made third eye" ||
+        msg === "who created third eye" ||
+        msg === "who developed third eye" ||
+        msg === "who is the creator of third eye" ||
+        msg === "who is third eye's creator" ||
+        msg === "who is third eye creator" ||
+        msg === "who is the creator of you" ||
+        msg === "who is your developer" ||
+        msg === "who developed this" ||
+        msg === "who created this" ||
+        msg === "who made this"
     ) {
 
         sendBuiltInReply(
@@ -3662,3 +3674,4 @@ window.addEventListener(
 
     }
 );
+```
