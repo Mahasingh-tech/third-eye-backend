@@ -478,6 +478,269 @@ function loadName() {
 
 
 // =====================================================
+// SHORTCUT / CHAT LANGUAGE NORMALIZER
+// =====================================================
+
+function normalizeMessage(message) {
+
+    let normalized =
+        String(message)
+            .toLowerCase()
+            .trim();
+
+    normalized =
+        normalized.replace(
+            /\bu\s+r\b/g,
+            "you are"
+        );
+
+    normalized =
+        normalized.replace(
+            /\br\s+u\b/g,
+            "are you"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bu're\b/g,
+            "you are"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bur\b/g,
+            "your"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bu\b/g,
+            "you"
+        );
+
+    normalized =
+        normalized.replace(
+            /\br\b/g,
+            "are"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bbcoz\b/g,
+            "because"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bbcos\b/g,
+            "because"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bbc\b/g,
+            "because"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bpls\b/g,
+            "please"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bplz\b/g,
+            "please"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bthx\b/g,
+            "thanks"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bty\b/g,
+            "thanks"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bwht\b/g,
+            "what"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bwat\b/g,
+            "what"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bhw\b/g,
+            "how"
+        );
+
+    normalized =
+        normalized.replace(
+            /\babt\b/g,
+            "about"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bmsg\b/g,
+            "message"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bidk\b/g,
+            "i don't know"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bimo\b/g,
+            "in my opinion"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bbtw\b/g,
+            "by the way"
+        );
+
+    normalized =
+        normalized.replace(
+            /\btbh\b/g,
+            "to be honest"
+        );
+
+    normalized =
+        normalized.replace(
+            /\basap\b/g,
+            "as soon as possible"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bpls tell me\b/g,
+            "please tell me"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bwhats\b/g,
+            "what is"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bwhos\b/g,
+            "who is"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bhows\b/g,
+            "how is"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bim\b/g,
+            "i am"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bive\b/g,
+            "i have"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bdont\b/g,
+            "don't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bcant\b/g,
+            "can't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bwont\b/g,
+            "won't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bdidnt\b/g,
+            "didn't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bisnt\b/g,
+            "isn't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bdoesnt\b/g,
+            "doesn't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bwasnt\b/g,
+            "wasn't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bwerent\b/g,
+            "weren't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bcouldnt\b/g,
+            "couldn't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bwouldnt\b/g,
+            "wouldn't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\bshouldnt\b/g,
+            "shouldn't"
+        );
+
+    normalized =
+        normalized.replace(
+            /\s+/g,
+            " "
+        )
+        .trim();
+
+    return normalized;
+
+}
+
+
+// =====================================================
 // SEND MESSAGE
 // =====================================================
 
@@ -508,8 +771,14 @@ function sendMessage() {
 
     requestNotificationPermission();
 
+    // =================================================
+    // NORMALIZE SHORTCUTS
+    // =================================================
+
     const msg =
-        usermessage.toLowerCase();
+        normalizeMessage(
+            usermessage
+        );
 
     let displayedMessage =
         usermessage;
@@ -734,9 +1003,12 @@ function sendMessage() {
         msg === "who created you" ||
         msg === "who is your creator" ||
         msg === "who developed you" ||
-        msg === "who made u" ||
-        msg === "who created u" ||
-        msg === "who developed u" ||
+        msg === "who made your" ||
+        msg === "who is your maker" ||
+        msg === "who is your developer" ||
+        msg === "who is the developer" ||
+        msg === "who built you" ||
+        msg === "who is behind you" ||
         msg === "who made third eye" ||
         msg === "who created third eye" ||
         msg === "who developed third eye" ||
@@ -744,7 +1016,6 @@ function sendMessage() {
         msg === "who is third eye's creator" ||
         msg === "who is third eye creator" ||
         msg === "who is the creator of you" ||
-        msg === "who is your developer" ||
         msg === "who developed this" ||
         msg === "who created this" ||
         msg === "who made this"
@@ -1184,14 +1455,9 @@ function sendMessage() {
     // =================================================
     // ALL OTHER QUESTIONS → AI
     // =================================================
-    // IMPORTANT:
-    // Definitions, meanings, synonyms, antonyms,
-    // examples, pronunciation and word-of-the-day
-    // questions are now handled by the AI.
-    // =================================================
 
     askAI(
-        usermessage
+        msg
     );
 
 }
