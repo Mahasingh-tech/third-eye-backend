@@ -175,7 +175,7 @@ function notifyThirdEyeAnswered() {
                 body:
                     "Your answer is ready. 🔔",
                 icon:
-                    "images/s2.jpeg"
+                    "/chatbot/images/s2.jpeg"
             }
         );
 
