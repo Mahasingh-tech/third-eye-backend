@@ -1,4 +1,3 @@
-```javascript
 // =====================================================
 // THIRD EYE v1.0
 // Created by: Maha Singh
@@ -3674,4 +3673,3 @@ window.addEventListener(
 
     }
 );
-```
