@@ -84,6 +84,17 @@ let thinkingInterval = null;
 
 
 // =====================================================
+// VOICE VARIABLES
+// =====================================================
+
+let activeRecognition = null;
+
+let voiceFinalText = "";
+
+let voiceSending = false;
+
+
+// =====================================================
 // PROCESSING LOCK
 // =====================================================
 
@@ -2450,12 +2461,17 @@ function checkEnter(event) {
 
 
 // =====================================================
-// VOICE INPUT — FIX REPEATED MESSAGE BUG
+// VOICE INPUT — FIXED
 // =====================================================
 
 function startListening() {
 
     if (isProcessing) {
+        return;
+    }
+
+
+    if (voiceSending) {
         return;
     }
 
@@ -2493,8 +2509,61 @@ function startListening() {
     }
 
 
+    // =================================================
+    // STOP OLD RECOGNITION
+    // =================================================
+
+    if (activeRecognition) {
+
+        try {
+
+            activeRecognition.abort();
+
+        }
+
+        catch (error) {
+
+            console.log(
+                "Previous recognition session already stopped."
+            );
+
+        }
+
+        activeRecognition =
+            null;
+
+    }
+
+
+    // =================================================
+    // CLEAR OLD VOICE DATA
+    // =================================================
+
+    voiceFinalText =
+        "";
+
+    voiceSending =
+        false;
+
+
+    // IMPORTANT:
+    // Clear the input before a new recording.
+    // This prevents the previous voice message
+    // from being reused.
+    input.value =
+        "";
+
+
+    // =================================================
+    // CREATE RECOGNITION
+    // =================================================
+
     const recognition =
         new SpeechRecognition();
+
+
+    activeRecognition =
+        recognition;
 
 
     recognition.lang =
@@ -2506,12 +2575,10 @@ function startListening() {
 
 
     // IMPORTANT:
-    // Do not use interim results here.
-    // This prevents old/intermediate speech
-    // from being reused on the next message.
-
+    // Keep interim results enabled so speech
+    // appears in the text box while speaking.
     recognition.interimResults =
-        false;
+        true;
 
 
     recognition.maxAlternatives =
@@ -2531,7 +2598,7 @@ function startListening() {
                     "🎙️";
 
                 button.disabled =
-                    true;
+                    false;
 
             }
 
@@ -2550,78 +2617,99 @@ function startListening() {
     recognition.onresult =
         function (event) {
 
-            const result =
-                event.results[0][0];
+            let currentFinal =
+                "";
+
+            let currentInterim =
+                "";
 
 
-            if (!result) {
-                return;
+            for (
+                let i = event.resultIndex;
+                i < event.results.length;
+                i++
+            ) {
+
+                const transcript =
+                    event.results[i][0]
+                        .transcript;
+
+
+                if (
+                    event.results[i].isFinal
+                ) {
+
+                    currentFinal +=
+                        transcript;
+
+                }
+
+                else {
+
+                    currentInterim +=
+                        transcript;
+
+                }
+
             }
 
 
-            let speech =
-                result.transcript;
+            // =========================================
+            // SAVE ONLY NEW FINAL SPEECH
+            // =========================================
+
+            if (
+                currentFinal.trim()
+            ) {
+
+                voiceFinalText +=
+                    " " +
+                    currentFinal;
+
+            }
 
 
-            speech =
-                speech
+            // =========================================
+            // SHOW SPEECH LIVE
+            // =========================================
+
+            const displayText =
+                (
+                    voiceFinalText +
+                    " " +
+                    currentInterim
+                )
                     .replace(
                         /[.,!?;:]/g,
                         ""
                     )
+                    .replace(
+                        /\s+/g,
+                        " "
+                    )
                     .trim();
 
 
-            if (!speech) {
-                return;
+            if (displayText) {
+
+                input.value =
+                    displayText;
+
             }
 
 
             console.log(
-                "Third Eye NEW speech:",
-                speech
+                "Third Eye speech:",
+                displayText
             );
 
 
-            // =================================================
-            // CRITICAL FIX
-            // =================================================
-            // Save the new speech in a separate variable.
-            // Do NOT depend on whatever was previously
-            // inside the input box.
-            // =================================================
-
-            const newMessage =
-                speech;
-
-
-            // Clear the input BEFORE sending.
-            input.value =
-                "";
-
-
-            // Put ONLY the current speech into the input.
-            input.value =
-                newMessage;
-
-
-            // Send ONLY this newly captured message.
-            setTimeout(
-                function () {
-
-                    if (
-                        !isProcessing &&
-                        input.value.trim() ===
-                        newMessage
-                    ) {
-
-                        sendMessage();
-
-                    }
-
-                },
-                50
-            );
+            // IMPORTANT:
+            // DO NOT call sendMessage() here.
+            //
+            // Waiting until onend prevents the
+            // previous voice message duplication.
+            //
 
         };
 
@@ -2686,6 +2774,10 @@ function startListening() {
 
             }
 
+
+            voiceSending =
+                false;
+
         };
 
 
@@ -2707,9 +2799,97 @@ function startListening() {
             }
 
 
+            activeRecognition =
+                null;
+
+
+            // =========================================
+            // GET FINAL SPEECH
+            // =========================================
+
+            const finalMessage =
+                voiceFinalText
+                    .replace(
+                        /[.,!?;:]/g,
+                        ""
+                    )
+                    .replace(
+                        /\s+/g,
+                        " "
+                    )
+                    .trim();
+
+
+            // Clear stored voice text immediately.
+            voiceFinalText =
+                "";
+
+
+            // =========================================
+            // NOTHING SPOKEN
+            // =========================================
+
+            if (!finalMessage) {
+
+                input.value =
+                    "";
+
+                voiceSending =
+                    false;
+
+                return;
+
+            }
+
+
+            // =========================================
+            // PUT FINAL SPEECH INTO INPUT
+            // =========================================
+
+            input.value =
+                finalMessage;
+
+
             console.log(
-                "Third Eye microphone stopped."
+                "Third Eye final speech:",
+                finalMessage
             );
+
+
+            // =========================================
+            // SEND EXACTLY ONCE
+            // =========================================
+
+            if (
+                !voiceSending &&
+                !isProcessing
+            ) {
+
+                voiceSending =
+                    true;
+
+
+                setTimeout(
+                    function () {
+
+                        if (
+                            input.value.trim() ===
+                            finalMessage
+                        ) {
+
+                            sendMessage();
+
+                        }
+
+
+                        voiceSending =
+                            false;
+
+                    },
+                    150
+                );
+
+            }
 
         };
 
@@ -2730,6 +2910,17 @@ function startListening() {
             "Could not start microphone:",
             error
         );
+
+
+        activeRecognition =
+            null;
+
+
+        voiceFinalText =
+            "";
+
+        voiceSending =
+            false;
 
 
         if (button) {
